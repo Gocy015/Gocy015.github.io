@@ -1,38 +1,459 @@
-{% extends '_layout.swig' %}
-{% import '_macro/post.swig' as post_template %}
-{% import '_macro/sidebar.swig' as sidebar_template %}
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
 
 
-{% block title %} {{ page.title }} | {{ config.title }} {% endblock %}
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
 
-{% block page_class %}page-post-detail{% endblock %}
+<link rel="stylesheet" href="/css/main.css">
 
 
-{% block content %}
 
-  <div id="posts" class="posts-expand">
-    {{ post_template.render(page) }}
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.1/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
 
-    <div class="post-spread">
-      {% if theme.jiathis %}
-        {% include '_partials/share/jiathis.swig' %}
-      {% elseif theme.baidushare %}
-        {% include '_partials/share/baidushare.swig' %}
-      {% elseif theme.add_this_id %}
-        {% include '_partials/share/add-this.swig' %}
-      {% elseif theme.duoshuo_shortname and theme.duoshuo_share %}
-        {% include '_partials/share/duoshuo_share.swig' %}
-      {% endif %}
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"blog.gocy.tech","root":"/","images":"/images","scheme":"Muse","version":"8.2.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"بحث...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}};
+  </script>
+<meta name="description" content="借着实习和正式入职之间的间隙，报了个途牛团(我这真不是打广告)去云南玩了一圈，记录一下所见所闻所感。 准备阶段这里还是不得不小喷一下途牛，由于是散团拼团，所以出团通知在出行前1~2天才发出，由于下订单的时候只留了个手机号，没有留邮箱，所以迟迟没有接到出团通知，打电话咨询了才把机票信息、接机联系人信息发过来（明明可以发短信又留了手机号，结果说没留邮箱所以没发出团信息）。 云南偏北、行程中包含香格里拉">
+<meta property="og:type" content="article">
+<meta property="og:title" content="云南游小记">
+<meta property="og:url" content="https://blog.gocy.tech/2016/06/14/a-trip-to-yunnan/index.html">
+<meta property="og:site_name" content="Gocy&#39;s home page">
+<meta property="og:description" content="借着实习和正式入职之间的间隙，报了个途牛团(我这真不是打广告)去云南玩了一圈，记录一下所见所闻所感。 准备阶段这里还是不得不小喷一下途牛，由于是散团拼团，所以出团通知在出行前1~2天才发出，由于下订单的时候只留了个手机号，没有留邮箱，所以迟迟没有接到出团通知，打电话咨询了才把机票信息、接机联系人信息发过来（明明可以发短信又留了手机号，结果说没留邮箱所以没发出团信息）。 云南偏北、行程中包含香格里拉">
+<meta property="og:locale">
+<meta property="og:image" content="https://blog.gocy.tech/images/YunNan/Arrival.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/YunNan/JinMa.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/YunNan/CuiHu.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/YunNan/CuiHu2.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/YunNan/YunNanUni.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/YunNan/FuZhaoLou.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/YunNan/ErHai.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/YunNan/ErHai2.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/YunNan/ShuHe.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/YunNan/Oxygen.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/YunNan/YuLong1.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/YunNan/YuLong3.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/YunNan/YuLong2.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/YunNan/LanYue.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/YunNan/LanYue4.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/YunNan/LanYue3.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/YunNan/LJGC.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/YunNan/LJGC1.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/YunNan/LJGC2.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/YunNan/TuDou.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/YunNan/Tiger1.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/YunNan/Tiger2.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/YunNan/Rubbish.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/YunNan/WayToXGLL.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/YunNan/Sky.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/YunNan/Tibetan.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/YunNan/Beef.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/YunNan/Party.png">
+<meta property="article:published_time" content="2016-06-14T13:09:32.000Z">
+<meta property="article:modified_time" content="2018-01-25T12:04:30.000Z">
+<meta property="article:author" content="Gocy">
+<meta property="article:tag" content="随笔">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://blog.gocy.tech/images/YunNan/Arrival.png">
+
+
+<link rel="canonical" href="https://blog.gocy.tech/2016/06/14/a-trip-to-yunnan/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh'
+  };
+</script>
+<title>云南游小记 | Gocy's home page</title>
+  
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="تشغيل شريط التصفح" role="button">
     </div>
   </div>
 
-{% endblock %}
+  <div class="site-meta">
 
-{% block sidebar %}
-  {{ sidebar_template.render(true) }}
-{% endblock %}
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">Gocy's home page</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">把热爱的事情做好</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
 
 
-{% block script_extra %}
-  {% include '_scripts/pages/post-details.swig' %}
-{% endblock %}
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          المحتويات
+        </li>
+        <li class="sidebar-nav-overview">
+          عام
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%87%86%E5%A4%87%E9%98%B6%E6%AE%B5"><span class="nav-number">1.</span> <span class="nav-text">准备阶段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%87%BA%E5%8F%91%EF%BC%81"><span class="nav-number">2.</span> <span class="nav-text">出发！</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9D%E6%8E%A2%E4%BA%91%E5%8D%97"><span class="nav-number">3.</span> <span class="nav-text">初探云南</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A3%AE%E7%BE%8E%E4%BA%91%E5%8D%97"><span class="nav-number">4.</span> <span class="nav-text">壮美云南</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%80%9C%E7%83%AD%E6%83%85%E2%80%9D%E7%9A%84%E4%B8%80%E5%A4%A9"><span class="nav-number">5.</span> <span class="nav-text">“热情”的一天</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Gocy</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives">
+          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-name">المقالات</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">الوسوم</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh">
+    <link itemprop="mainEntityOfPage" href="https://blog.gocy.tech/2016/06/14/a-trip-to-yunnan/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Gocy">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Gocy's home page">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          云南游小记
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">نُشر في</span>
+
+      <time title="أُنشأ: 2016-06-14 21:09:32" itemprop="dateCreated datePublished" datetime="2016-06-14T21:09:32+08:00">2016-06-14</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">عُدل في</span>
+        <time title="عُدل: 2018-01-25 20:04:30" itemprop="dateModified" datetime="2018-01-25T20:04:30+08:00">2018-01-25</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>借着实习和正式入职之间的间隙，报了个<a target="_blank" rel="noopener" href="http://www.tuniu.com/tours/210049553">途牛团(我这真不是打广告)</a>去云南玩了一圈，记录一下所见所闻所感。</p>
+<h3 id="准备阶段"><a href="#准备阶段" class="headerlink" title="准备阶段"></a>准备阶段</h3><p>这里还是不得不小喷一下途牛，由于是散团拼团，所以出团通知在出行前1~2天才发出，由于下订单的时候只留了个手机号，没有留邮箱，所以迟迟没有接到出团通知，打电话咨询了才把机票信息、接机联系人信息发过来（明明可以发短信又留了手机号，结果说没留邮箱所以没发出团信息）。</p>
+<p>云南偏北、行程中包含香格里拉、玉龙雪山等高海拔地区，所以大夏天的我一个广东人硬是带上了毛衣秋裤。</p>
+<a id="more"></a>
+
+<h3 id="出发！"><a href="#出发！" class="headerlink" title="出发！"></a>出发！</h3><p>家里离机场远，起了个大早搭着Uber+地铁赶到了机场，搭乘11：50的飞机飞往昆明。<br><img src="/images/YunNan/Arrival.png" alt="Arrive in KunMing"></p>
+<p>第一天入住的酒店名为“旺穗酒店”，是一家“五星级酒店”，实话说略坑，总体来说环境设施略超过七天如家之流（后来导游说，云南省自己又有一套酒店星级评定，这家酒店就是云南省五星，然而一般说的五星是国家五星），第一天入住后没有行程安排，住的地方交通还算便利，跑去昆明比较有名的金马碧鸡坊和翠湖公园转了转，中途还购买了云南比较出名的鲜花饼，个人觉得原味玫瑰味、松仁味、茉莉花味还有一个带蛋黄的口味特别好吃（其实都很好吃）</p>
+<p>金马碧鸡坊：<br><img src="/images/YunNan/JinMa.png" alt="JinMaBiJi"><br>我害羞的女朋友漂亮吗~</p>
+<p>翠湖公园：（真的很漂亮）<br><img src="/images/YunNan/CuiHu.png" alt="CuiHu"><br><img src="/images/YunNan/CuiHu2.png" alt="CuiHu2"></p>
+<p>昆明海拔1800米+了，比广州最高海拔的地方还高600多米，不过除了感受到丝丝清凉之外，并没有其他的感觉</p>
+<p>晚些时候又“偶遇”了云南大学<br><img src="/images/YunNan/YunNanUni.png" alt="YunNan University"></p>
+<p>晚上吃了朋友推荐的福照楼，可惜去的晚了没吃上汽锅鸡<br><img src="/images/YunNan/FuZhaoLou.png" alt="FuZhaoLou"><br>退而求次，吃了个汽锅蒸肉饼，肉质真的很嫩，味道很好，总体来讲感受到两点：<br>1.云南人口味实在是重，所有菜都好咸<br>2.这家餐厅的分量真的很足，打完折两个人70+吃到撑还有剩，一份18元的凉面感觉分量与三碗泡面相当。</p>
+<p>第二天的行程是大早飞往大理，晚饭过后，赶紧就洗漱休息了。</p>
+<h3 id="初探云南"><a href="#初探云南" class="headerlink" title="初探云南"></a>初探云南</h3><p>四点刚过就从床上爬起来收拾行李，马不停蹄地乘飞机前往大理。大理机场是我见过的最小的机场了：两个登机口、两条行李传输带、两个到达出口，整个候机厅只有两三个篮球场的大小，出门就是停车场，电影《心花路放》有一段取景在此，难怪一出出口我觉得这个机场似曾相识。</p>
+<p>可能是同班飞机座位不够，我们团被拆成两班飞机到大理，人到齐的时候已经十点过半，我们坐上了大巴千万午餐地点。</p>
+<p>我们的导游姓刘，是土生土长的纳西族，在车上，和我们粗略的介绍了一些云南的风土人情，譬如把吃饭叫做“干饭”，把吃饱了叫“把肚子干大干圆了”，而将厕所称为“歌厅”，大小解统称为“唱歌跳舞”，这样独特的语言习惯引得大家捧腹。</p>
+<p>饭后第一站也是今天唯一一站是<a target="_blank" rel="noopener" href="http://baike.baidu.com/link?url=BnxXYjWJ8T1K15ky973EnrFlCOmCx47m6HaLVw5samm365CspiECZXzFO8S3orhpOAREIROejj_nl4LttHWiGRfE0AFrX08aJFeqGhxzGM_">洱海</a>，虽说叫海，其实是一片很大的淡水湖泊，行程的安排是沿着洱海的路骑行，不得不说风光真的很美。</p>
+<p><img src="/images/YunNan/ErHai.png" alt="ErHai"></p>
+<p><img src="/images/YunNan/ErHai2.png" alt="ErHai2"></p>
+<p>不知道是洱海只有这一条路可供骑行还是旅行社是为了安排我们骑到一个可供拍照的地点，骑行的路有许多汽车穿行，路很窄又是双行道，还有不少地方因为修路占用了半条公路，总的来说骑行的过程还是有点危险的，而且吸了不少废气。(= =#)</p>
+<p>作为一个常年生活在深圳/广州的人来说，洱海的蓝天白云碧水，让我感叹大自然是多么的壮美。</p>
+<p>短暂逗留后，我们又驱车前往丽江准备下榻酒店，沿途刘导向我们介绍了丽江几大出名的特色小吃：象山市场的腊排骨火锅、金凯广场的黑山羊火锅、花马街的三文鱼，还有丽江粑粑和鸡豆凉粉；正好酒店离花马街不远，安排好住宿后，我俩便只身前往花马街，试吃了三文鱼和丽江粑粑。</p>
+<p>我平时很少吃鱼生，日料店的三文鱼刺身只吃过一两次，而丽江本地的三文鱼和大部分日料店那肥厚鲜红的三文鱼不同，这里的三文鱼是薄切，颜色更加偏橙色一些，不过吃法依然是芥末酱油，至于味道和口感个人觉得也没有特别让人印象深刻；价格倒是比较实惠，我们单点了一盘三文鱼刺身，只要28，分量不算少。而丽江粑粑分甜、咸两种，我们点的是甜的，感觉是一块大烧饼，里面是玫瑰泥馅儿，喜欢各类煎饼烙饼的人应该也会喜欢吃丽江粑粑。</p>
+<p>这餐吃完已是九点多，虽说已经是大晚上了，但其实天才刚刚黑下来(可能是海拔高，云南晚上八点后才开始慢慢暗下来)，明天的行程计划登上玉龙雪山，因此我们匆匆赶回酒店，洗漱休息，为明天的登山做好体能存储。</p>
+<h3 id="壮美云南"><a href="#壮美云南" class="headerlink" title="壮美云南"></a>壮美云南</h3><p>为了错峰避免在玉龙雪山的冰川索道排队过久，今天发团时间依然很早，从酒店到玉龙雪山的中途路过了束河古镇，花了15分钟左右简单的逛了逛，就马不停蹄地赶往玉龙雪山。</p>
+<p><img src="/images/YunNan/ShuHe.png" alt="ShuHe"></p>
+<p>玉龙雪山还是处女峰，至今没有登山队成功登顶过，而这座雪山，也是纳西族人心中的神山。</p>
+<p>在进入风景区之前，我们还特地停车在风景区外租用了羽绒服、购买了氧气瓶。</p>
+<p><img src="/images/YunNan/Oxygen.png" alt="Oxygen"></p>
+<p>景区很大，从入口到山底缆车站还要乘坐景区内的大巴，下车后，我们便乘“冰川大索道”直奔海拔4506米的玉龙雪山观景平台。</p>
+<p>虽然之前导游说，我们很幸运，一周前一场大雪让玉龙雪山年轻了十岁，重新成为了一座“雪山”而不仅仅是一座“石山”，不过由于正值夏季，缆车几乎到达顶部才开始看到一些积雪(或者说是冰)，我08年春节曾在老家长沙见过雪，那时地上的积雪可以覆盖过整个脚面，但在四千多米的高山上，这样的雪景绝不是普普通通的雪所可以比拟的。</p>
+<p><img src="/images/YunNan/YuLong1.png" alt="YuLong1"></p>
+<p>我缺氧的感觉还是蛮明显的，基本一两分钟要吸几口氧气，不然就会觉得喘不上气，倒是我女票没什么事，还是活蹦乱跳的</p>
+<p><img src="/images/YunNan/YuLong3.png" alt="YuLong3"></p>
+<p>原本有栈道可以通往4680米的更高处，但我们上来不久后就刮起了大风，下起了小冰雹，所以往上的路被封闭了。</p>
+<p>山上的风很大很大，要不时换手拿氧气瓶，否则一会手就冻僵了。</p>
+<p>手机和相机拍出来的照片，真的无法呈现出当时眼前的景象，无法诠释当时的心情；我不常旅行，但这次，在雪山上，山风呼啸、冰雪飞舞，我真真切切的感受到自己的渺小和自然的伟大。</p>
+<p><img src="/images/YunNan/YuLong2.png" alt="YuLong2"></p>
+<p>逗留片刻后，我们便下山，跟团前往玉龙雪山脚下的蓝月谷、白水河。和雪山的壮丽不同，蓝月谷白水河美得让我连走路都下意识放轻脚步，生怕破坏了眼前的美景。</p>
+<p><img src="/images/YunNan/LanYue.png" alt="LanYue"></p>
+<p>文字难以表达我此时的情感，身处这样的环境，即便周围有着喧闹的游人，我依然觉得自己整个人都安静了下来。</p>
+<p><img src="/images/YunNan/LanYue4.png" alt="LanYue4"></p>
+<p>这片湖水背靠雪山，俨然是一幅山水画，也难怪沿途有许多对新人在这里拍摄婚纱照。</p>
+<p><img src="/images/YunNan/LanYue3.png" alt="LanYue3"></p>
+<p>游完这儿，玉龙风景区基本就都看完了，在景区内吃了个自助餐，饭后还在景区内观看了张艺谋导演的表演《印象丽江》，颇为震撼，少数民族的热情好客与奔放豪迈，让我开始喜欢上这个地方。(图片在女票手机里= =#，这是一个包含在团费里的表演，虽然导游说不好看，但是我还是真心推荐)。</p>
+<p>演出结束后，我们便驱车前往丽江宋城旅游区，观看《丽江千古情》(这个是自费项目)。</p>
+<p>来看这场表演完全是因为“一生必看的演出”这句广告词，心想着既然来了云南，到了丽江，没有理由错过这一个被如此广告的演出。</p>
+<p>为了专心看演出，我没有拍照，豆瓣有一个<a target="_blank" rel="noopener" href="https://www.douban.com/note/396417126/">帖子</a>我觉得拍的还是不错的，整个演出分几幕，通过歌舞表演讲述了纳西族人好几个阶段的历史文化，我是个糙人，歌舞讲述的历史我没有全部看懂，但场景、灯光以及表演本身都深深地震撼了我，我曾经练过舞蹈，也在台上表演过，懂得台上一分钟台下十年功的道理，舞蹈演员们充满力量和情感，呈现了一场视听盛宴，票价虽然不低，但我认为这一次的体验物有所值。</p>
+<p>演出过后是自由活动时间并且晚餐自理，我和女票决定好好去丽江古城走走，看看这闻名已久的古城。</p>
+<p><img src="/images/YunNan/LJGC.png" alt="LJGC"></p>
+<p>说实话，这里的建筑虽说风格古朴，但没什么特别，而且商业化气息真的特别重，可以说现在的丽江古城，不过是建筑风格古朴的购物、酒吧街而已。</p>
+<p><img src="/images/YunNan/LJGC1.png" alt="LJGC1"></p>
+<p>唯一有点意思的，可能也就数墙壁上的东巴象形文字了。</p>
+<p><img src="/images/YunNan/LJGC2.png" alt="LJGC2"></p>
+<p>古城里小吃居多，而且价格偏高，于是我和女票再次前往花马街，这一次我们试了试腊排骨。</p>
+<p>由于只有两个人，害怕吃腊排骨或是黑山羊火锅吃不完，所以点了一份干锅腊排骨。不知道是不是由于是做法的原因，腊排骨的腊肉味不是很重，不过味道不怎么出众，就突出一个咸(在云南吃的都好咸啊)，女票倒是觉得腊排骨蛮好吃的。截止到今天(其实在云南的八天我都这么觉得)，我深深感受到了土豆(云南喜欢把土豆叫洋芋)的力量，不论是第一天在昆明福照楼吃的土豆泥，亦或是金马碧鸡坊吃的烤土豆，还是今晚这锅干锅土豆，都极其符合我的口味(毕竟我是一个忠实的土豆爱好者，土豆只要弄熟了，都好吃)</p>
+<p><img src="/images/YunNan/TuDou.png" alt="TuDou"></p>
+<p>今天可以说是整个云南游的高潮，体验了雪山的震撼、蓝月谷的静美，通过两场表演体会到了少数民族的热情好客、了解了当地的风俗人情和历史文化。</p>
+<h3 id="“热情”的一天"><a href="#“热情”的一天" class="headerlink" title="“热情”的一天"></a>“热情”的一天</h3><p>今天的行程是从丽江出发，途径虎跳峡、参观独克宗古城后前往离天堂最近的地方–香格里拉。</p>
+<p>香格里拉在迪庆藏族自治州内，而迪庆与丽江的分界线是金沙江（即长江上游，因早时的淘金潮流得名），在进入迪庆自治州后，我们迎来了一位地导：土生土长的藏族人扎西尼玛。</p>
+<p>藏语“扎西”是吉祥的意思，作为称呼也可以理解成为帅哥小伙的意思，而“尼玛”这个词，扎西尼玛好好地解释了一下：“尼玛”发源于藏语，在藏语中，“尼玛”是太阳的意思，由于藏族信佛，他们的名字都由佛家大师来决定，父母没有取名的权力，作为一种期盼，父母常常会将自己孩子的小名叫做“尼玛”，而被不明其意的人听到之后，慢慢地演变成今天被大家熟知的网络用语。</p>
+<p>都说藏族人热情好客，性情奔放，而今天我好好领略了一番藏族人的率性。在游客的心中，多多少少会有一些这样的想法：我花钱旅游，导游和我实质有点像是“雇佣”的关系，或是“服务”关系，导游应尽可能的服务我，而扎西尼玛却不完全这样认为，首先他感谢我们，感谢缘分让他和我们相遇，并热情地向我们问好，但当全车游客都懒洋洋的回了一句“扎西德勒”的时候，扎西尼玛的脸色立刻就变了，他说接待的许多旅游团，都是“上车睡觉，下车拍照”，丝毫不愿意接触、体验当地的风土人情，语气中带着一些怒意和失望。我想，他不仅仅是想把我们当做简简单单掏钱参观的游客，而是想把他深爱的香格里拉和藏族文化介绍给我们，带我们体会。当我们鼓吹国外的人生活中是如何的友好、如何对陌生人面带微笑、与邻居互相帮助时，一位藏族同胞正热情迫切地想和我们交流，说是冷漠、害羞、或是汉族人骨子里的含蓄都可以，但我真的觉得在别人如此盛情下我们所做出的表现，实在是丢人。</p>
+<p>简短的“见面”后，我们便抵达了虎跳峡。心底的第一个感觉便是震撼，以及感受到自己的渺小，而与玉龙雪山上的飘飘白雪和凛冽寒风不同，虎跳峡湍急的水流仿佛要将周围的一切吞没。</p>
+<p><img src="/images/YunNan/Tiger1.png" alt="Tiger1"><br><img src="/images/YunNan/Tiger2.png" alt="Tiger2"></p>
+<p>看到美景自然忍不住多看几眼，直到我看见了<font color=#FF4500 size = 5>这幅景象:</font></p>
+<p><img src="/images/YunNan/Rubbish.png" alt="Rubbish"></p>
+<p>心里有多不舒服就不说了，希望国家真的做好“素质教育”，不是“应试教育”。</p>
+<p>值得一提的是，虽然这次行程安排的是虎跳峡景区中最多人、最轻松的一条徒步栈道，但上上下下几百级台阶，走起来还是挺累人的，因此出现的抬轿服务也是别具一格。</p>
+<p>午饭后，继续往香格里拉方向前行，途径的独克宗古城中主要是参观转经筒，并且进寺庙中上香祈福（这里的香火钱不是必须给的，说“心诚则灵”，还是挺好的，总感觉现在挺多寺庙都变成圈钱的景点了）。广场上有各种藏獒、羊驼和“神牛”收费合照，价格多在10-15一张快冲照片，感觉拍一拍也是可以的(云南盛产羊驼吗？玉龙四千多米见到了羊驼，蓝月谷有羊驼，这里又有)。</p>
+<p>接下来我们继续驱车前往香格里拉，而后下榻酒店。</p>
+<p><img src="/images/YunNan/WayToXGLL.png" alt="OnOurWay"></p>
+<p><img src="/images/YunNan/Sky.png" alt="Sky"></p>
+<p>这辈子没见过这么蓝的天啊（又要吐槽照片拍不出眼睛看到的效果了）。</p>
+<p>晚饭后接下来是藏民家访的自费项目，出团前本想着说太贵了（280/人），电影都下载好了准备晚上宅着看电影，不过临门一脚又决定掏钱去参加，毕竟这是毕业游，估计短时间不会再来云南，既然都几千公里跑过来了，何不体验一下异域风情？</p>
+<p>整个家访充斥着欢声笑语，品尝青稞酒、酥油茶、烤耗牛肉，亲手捏<a target="_blank" rel="noopener" href="http://baike.baidu.com/link?url=fZnnXU-7pcCVdwR-XcBWitkKBF1hNtu1I93ONdcerAOWBVxVL5vskIkkeTriuMV4hBi4wy4jeqcOWZAVMw63qa">糌粑</a>,歌舞表演，拔河游戏，篝火晚会…</p>
+<p>总结起来就两个词：值、藏会玩。</p>
+<p>藏族小伙真的能歌善舞，又热情。<br><img src="/images/YunNan/Tibetan.png" alt="Tibetan"></p>
+<p>高原耗牛肉，和平时以鲜嫩的口感不同，我觉得烤耗牛都给我一种“粗犷野性”的感觉。<br><img src="/images/YunNan/Beef.png" alt="Beef"></p>
+<p>篝火晚会真是群魔乱舞、鬼哭狼嚎（拍的时候已经散场了）。<br><img src="/images/YunNan/Party.png" alt="Party"></p>
+<p>有些事，一个人干，很傻逼，但是一群人一起干，就傻的很欢乐。这句话就是我对今天的晚会的最大感想，这不是一场有模有样的演出，不是山珍海味的宴席，藏族人用最大的嗓门、最多的美酒、最质朴的舞蹈把自己介绍给我们，而我们被他们的热情所感染，和他们一起狂欢。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E9%9A%8F%E7%AC%94/" rel="tag"># 随笔</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2016/05/27/first-blog/" rel="prev" title="第一篇文章">
+                  <i class="fa fa-chevron-left"></i> 第一篇文章
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2016/09/03/runloop-source-reading/" rel="next" title="RunLoop学习笔记">
+                  RunLoop学习笔记 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      const activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      const commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Gocy</span>
+</div>
+  <div class="powered-by">تطبيق الموقع <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>

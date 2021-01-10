@@ -1,38 +1,381 @@
-{% extends '_layout.swig' %}
-{% import '_macro/post.swig' as post_template %}
-{% import '_macro/sidebar.swig' as sidebar_template %}
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
 
 
-{% block title %} {{ page.title }} | {{ config.title }} {% endblock %}
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
 
-{% block page_class %}page-post-detail{% endblock %}
+<link rel="stylesheet" href="/css/main.css">
 
 
-{% block content %}
 
-  <div id="posts" class="posts-expand">
-    {{ post_template.render(page) }}
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.1/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
 
-    <div class="post-spread">
-      {% if theme.jiathis %}
-        {% include '_partials/share/jiathis.swig' %}
-      {% elseif theme.baidushare %}
-        {% include '_partials/share/baidushare.swig' %}
-      {% elseif theme.add_this_id %}
-        {% include '_partials/share/add-this.swig' %}
-      {% elseif theme.duoshuo_shortname and theme.duoshuo_share %}
-        {% include '_partials/share/duoshuo_share.swig' %}
-      {% endif %}
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"blog.gocy.tech","root":"/","images":"/images","scheme":"Muse","version":"8.2.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"بحث...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}};
+  </script>
+<meta name="description" content="转眼便来到了 2016 年的最后一周。不得不说，2016 对我而言是充满变化的一年，在这圣诞之际，写一篇博客记录一下即将过去的这一年。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="2016年度总结">
+<meta property="og:url" content="https://blog.gocy.tech/2016/12/24/2016-Yearly/index.html">
+<meta property="og:site_name" content="Gocy&#39;s home page">
+<meta property="og:description" content="转眼便来到了 2016 年的最后一周。不得不说，2016 对我而言是充满变化的一年，在这圣诞之际，写一篇博客记录一下即将过去的这一年。">
+<meta property="og:locale">
+<meta property="article:published_time" content="2016-12-24T05:44:46.000Z">
+<meta property="article:modified_time" content="2017-05-27T01:29:09.000Z">
+<meta property="article:author" content="Gocy">
+<meta property="article:tag" content="年度总结">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://blog.gocy.tech/2016/12/24/2016-Yearly/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh'
+  };
+</script>
+<title>2016年度总结 | Gocy's home page</title>
+  
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="تشغيل شريط التصفح" role="button">
     </div>
   </div>
 
-{% endblock %}
+  <div class="site-meta">
 
-{% block sidebar %}
-  {{ sidebar_template.render(true) }}
-{% endblock %}
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">Gocy's home page</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">把热爱的事情做好</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
 
 
-{% block script_extra %}
-  {% include '_scripts/pages/post-details.swig' %}
-{% endblock %}
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          المحتويات
+        </li>
+        <li class="sidebar-nav-overview">
+          عام
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8A%80%E6%9C%AF"><span class="nav-number">1.</span> <span class="nav-text">技术</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B7%A5%E4%BD%9C"><span class="nav-number">1.1.</span> <span class="nav-text">工作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A7%AF%E7%B4%AF"><span class="nav-number">1.2.</span> <span class="nav-text">积累</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%88%91%E4%B9%9F%E6%9C%89%E5%BC%80%E6%BA%90%E9%A1%B9%E7%9B%AE%E4%BA%86"><span class="nav-number">1.2.1.</span> <span class="nav-text">我也有开源项目了</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Community-Debugging"><span class="nav-number">1.2.2.</span> <span class="nav-text">Community Debugging</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Github-Hexo"><span class="nav-number">1.2.3.</span> <span class="nav-text">Github + Hexo</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Dear-JavaScript"><span class="nav-number">1.2.4.</span> <span class="nav-text">Dear JavaScript</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%85%B6%E5%AE%83"><span class="nav-number">1.2.5.</span> <span class="nav-text">其它</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%94%9F%E6%B4%BB"><span class="nav-number">2.</span> <span class="nav-text">生活</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%81%A5%E8%BA%AB"><span class="nav-number">2.1.</span> <span class="nav-text">健身</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B8%B8%E6%88%8F"><span class="nav-number">2.2.</span> <span class="nav-text">游戏</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%84%9F%E6%83%85"><span class="nav-number">2.3.</span> <span class="nav-text">感情</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Gocy</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives">
+          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-name">المقالات</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">الوسوم</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh">
+    <link itemprop="mainEntityOfPage" href="https://blog.gocy.tech/2016/12/24/2016-Yearly/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Gocy">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Gocy's home page">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          2016年度总结
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">نُشر في</span>
+
+      <time title="أُنشأ: 2016-12-24 13:44:46" itemprop="dateCreated datePublished" datetime="2016-12-24T13:44:46+08:00">2016-12-24</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">عُدل في</span>
+        <time title="عُدل: 2017-05-27 09:29:09" itemprop="dateModified" datetime="2017-05-27T09:29:09+08:00">2017-05-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>转眼便来到了 2016 年的最后一周。不得不说，2016 对我而言是充满变化的一年，在这圣诞之际，写一篇博客记录一下即将过去的这一年。</p>
+<a id="more"></a>
+
+<h2 id="技术"><a href="#技术" class="headerlink" title="技术"></a>技术</h2><blockquote>
+<p>吃饭的本事，还是不能落下。</p>
+</blockquote>
+<h3 id="工作"><a href="#工作" class="headerlink" title="工作"></a>工作</h3><p>如果要给今年发生的大事排个榜，那么工作必然是榜上头名了。</p>
+<p>自三月份开始实习到现在，竟也有小一年时间了。最深刻的体会便是，你在学校学到的那些，来到企业内根本就不够用。在学院跟着老师开发的时候，版本管理基本靠手动压缩成 zip ，从没试过看大段大段的别人的代码，而由于项目代码简单，功能的增删改也非常简单。直到进入项目组，看到 1 个多 G 的项目工程，我才知道什么叫“项目”（虽然很大一部分空间用来存各种 UI 的切图）。我第一次看一个具有完整生态的应用：账号登录和信息存储、获取 token 登入频道、与服务器做心跳同步等等，前后花了近两周才走通整个项目的主体代码。对了，把 svn 搞明白都花了我大半天时间。</p>
+<p><img src = "/images/2016Summary/Login.jpeg" width = 380></img><center><em>阅读项目登录模块时所做的笔记</em></center></p>
+<p>之前以为自己多牛逼，进来才发现自己是菜鸡。当然，仔细的阅读也为我接下来改 bug 并开始实现需求打下了良好的基础，基本要依赖什么模块都不太需要问别人，自己试试就能做得七七八八。但这个这第一个项目给我提升最多的或许不是编码硬能力的提高，而是如何进行团队开发这种软实力的提高。如何研读文档、与后台定接口联调、正确的进行版本控制、和测试共同定位 bug 等等，这些都是我在之前的项目开发中缺失的技能。</p>
+<!-- moved "vertical-align:middle" style from span to img -->
+
+<p><img src = "/images/2016Summary/Bugs.jpeg" width = 220></img><center><em>入职以来被提过的 Bug</em></center></p>
+<h3 id="积累"><a href="#积累" class="headerlink" title="积累"></a>积累</h3><p>回头再看，好像很难说开发哪项任务让我的编码能力有了怎样的提高，但不论是由于需求开发的需要，还是源于团队分享，抑或是自己找到的一些技术文章，今年所做的技术积累也非常可观。</p>
+<h4 id="我也有开源项目了"><a href="#我也有开源项目了" class="headerlink" title="我也有开源项目了"></a>我也有开源项目了</h4><p>终于在 <a target="_blank" rel="noopener" href="https://github.com/Gocy015/">我的Github</a> 有了持续地产出。今年写了几个通用的 UI 组件（ PieChart , ExpandableTableView , GuidanceView ），功能不复杂，但每一个组件在编写的过程中，我都尽量做更高层次的抽象，站在“第三方使用者”的角度考虑，如何写出更易用，更“黑盒”的库。尽管几个组件库加起来还不到十个 star ，但不论如何，也是迈开了在社区共享代码的第一步了（ 为啥我写的最辛苦的 <a target="_blank" rel="noopener" href="https://github.com/Gocy015/MotionExperiment">Core Animation 动画库</a> 偏偏没人看呢）。</p>
+<h4 id="Community-Debugging"><a href="#Community-Debugging" class="headerlink" title="Community Debugging"></a>Community Debugging</h4><p>我也终于迈出了阅读优秀源码的一步。今年我阅读了 RunLoop 相关的部分 CoreFoundation 源码以及 AsyncDisplayKit 的部分源码，并且也记录下了相应的感想（<a href="/2016/09/03/runloop-source-reading/">RunLoop源码阅读笔记</a> 、<a href="/2016/09/10/asdk-sourcecode-reading/">AsyncDisplayKit源码阅读笔记</a>）。阅读这些代码对我的影响是相对隐式的，尽管在简单地功能开发中难以体现，但现在无论是 debug ，还是开发中对所负责模块的解耦，我都感觉自己的“编程思维”比起之前有了很大的提高。另外，我还加入了 <a target="_blank" rel="noopener" href="https://github.com/xitu/gold-miner">掘金翻译计划</a> ，成为了一名技术文章的译者。我所学到的几乎一切编程知识都来源于开源社区，现在，我也希望通过自己的绵薄之力，回馈社区。</p>
+<h4 id="Github-Hexo"><a href="#Github-Hexo" class="headerlink" title="Github + Hexo"></a>Github + Hexo</h4><p>还有一个不得不提的就是这个博客了。给我 <a target="_blank" rel="noopener" href="https://w3ctrain.com/">大楷哥</a> 一万个感谢，不仅仅因为教我搭博客、学 JavaScript ；正是因为看到你，一个在我身边的人，有着这么多优秀的习惯，我才下决心开始记录这学习之路的点点滴滴。</p>
+<h4 id="Dear-JavaScript"><a href="#Dear-JavaScript" class="headerlink" title="Dear JavaScript"></a>Dear JavaScript</h4><p>“微信小程序革客户端开发的命”风波虽然已经过去，但 JavaScript 的大浪可还正在汹涌翻滚。在 Web 前端，JavaScript 优秀框架不断涌现。在 Native 客户端，混编甚至纯 JavaScript 实现层出不穷。在后端，LeanCloud 提供 Node.js 实现数据存储逻辑。正如我们项目组组长在技术分享上说的那样，“在未来，能用到 JavaScript 的地方，最终都会用上 JavaScript ”，我还并不了解这门语言到底有多强大，而又为什么会这么强大。但我已起步，开始了解并学习它。</p>
+<h4 id="其它"><a href="#其它" class="headerlink" title="其它"></a>其它</h4><p>终于自己动手写了单元测试、学会了利用 Charles / WireShark 抓包、终于搞懂了 http 包的结构等等。更重要的是，已经初步养成了学习的惯性，成功染上了不做点技术积累就不舒服的毛病。</p>
+<p><img src = "/images/2016Summary/Commits.jpeg" width = 420></img><center><em>我的 Github Commit</em></center></p>
+<h2 id="生活"><a href="#生活" class="headerlink" title="生活"></a>生活</h2><blockquote>
+<p>我常常想，为什么我为我，与他人不同。别人要求你做的事，你不做，任何人都可以代替你做。唯独那些你选择做的事，让你成为了自己。</p>
+</blockquote>
+<p>初入社会，我最担心的一件事就是加班。并不是怕累或是什么，而是害怕失去了自我。在许多事情上，我和很多同龄人一样，非常的迷茫，但我很庆幸，打心底里，我知道自己想坚持什么。</p>
+<p><strong>我先为我，后为一个程序员。</strong></p>
+<h3 id="健身"><a href="#健身" class="headerlink" title="健身"></a>健身</h3><p>很高兴，在入职的第一年，我成功地保持了健身的习惯。有的人把下班后的时间用来加班，他们或许能够获得更好地绩效。有的人把下班后的时间用来积累，他们或许最后能够成为行业精英。我习惯用举铁结束忙碌的一天，我也喜欢看着自己慢慢变成自己想象中的那样的人。</p>
+<p><img src = "/images/2016Summary/Workout.jpeg" width = 220></img><center><em>摄于 2016.9.20</em></center></p>
+<h3 id="游戏"><a href="#游戏" class="headerlink" title="游戏"></a>游戏</h3><p>小时候，就常和爸爸玩 PS2 ，从没想过有一天，我会真的买下属于自己的游戏机。那一刻我才觉得自己真的长大了，可以通过自己的努力来满足自己的渴望。</p>
+<p><img src = "/images/2016Summary/PS4.jpeg" width = 320></img><center><em>然而我已经把 2K17 卖了</em></center></p>
+<h3 id="感情"><a href="#感情" class="headerlink" title="感情"></a>感情</h3><p>:) 啥也别说了，等我。</p>
+<p><img src = "/images/2016Summary/We.jpeg" width = 320></img><center><em>那些美好的不美好的，我都藏在心里。</em></center></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%B9%B4%E5%BA%A6%E6%80%BB%E7%BB%93/" rel="tag"># 年度总结</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2016/12/03/understanding-this-in-js/" rel="prev" title="iOS 程序员如何理解 JS 中的 this">
+                  <i class="fa fa-chevron-left"></i> iOS 程序员如何理解 JS 中的 this
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2016/12/31/using-awakeFromNib/" rel="next" title="慎用 awakeFromNib 进行初始化">
+                  慎用 awakeFromNib 进行初始化 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      const activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      const commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Gocy</span>
+</div>
+  <div class="powered-by">تطبيق الموقع <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>

@@ -1,38 +1,366 @@
-{% extends '_layout.swig' %}
-{% import '_macro/post.swig' as post_template %}
-{% import '_macro/sidebar.swig' as sidebar_template %}
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
 
 
-{% block title %} {{ page.title }} | {{ config.title }} {% endblock %}
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
 
-{% block page_class %}page-post-detail{% endblock %}
+<link rel="stylesheet" href="/css/main.css">
 
 
-{% block content %}
 
-  <div id="posts" class="posts-expand">
-    {{ post_template.render(page) }}
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.1/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
 
-    <div class="post-spread">
-      {% if theme.jiathis %}
-        {% include '_partials/share/jiathis.swig' %}
-      {% elseif theme.baidushare %}
-        {% include '_partials/share/baidushare.swig' %}
-      {% elseif theme.add_this_id %}
-        {% include '_partials/share/add-this.swig' %}
-      {% elseif theme.duoshuo_shortname and theme.duoshuo_share %}
-        {% include '_partials/share/duoshuo_share.swig' %}
-      {% endif %}
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"blog.gocy.tech","root":"/","images":"/images","scheme":"Muse","version":"8.2.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"بحث...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}};
+  </script>
+<meta name="description" content="前言经过前两篇文章的尝试，我们已经成功的实现了一个无用代码检查插件。但是一个成熟的项目，其中的代码复杂度远比前文的 Demo 要高得多，要想真正在项目工程中运行插件，检查无用代码，还有许多坑要踩。本篇文章中，我将分享自己在从 Demo -&gt; 实际项目的适配过程中所遇到的问题一些问题。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="如何使用 Clang Plugin 找到项目中的无用代码（Part 3）">
+<meta property="og:url" content="https://blog.gocy.tech/2017/09/16/DetectingUselessCodeWithClang-p3/index.html">
+<meta property="og:site_name" content="Gocy&#39;s home page">
+<meta property="og:description" content="前言经过前两篇文章的尝试，我们已经成功的实现了一个无用代码检查插件。但是一个成熟的项目，其中的代码复杂度远比前文的 Demo 要高得多，要想真正在项目工程中运行插件，检查无用代码，还有许多坑要踩。本篇文章中，我将分享自己在从 Demo -&gt; 实际项目的适配过程中所遇到的问题一些问题。">
+<meta property="og:locale">
+<meta property="article:published_time" content="2017-09-16T02:11:56.000Z">
+<meta property="article:modified_time" content="2017-09-16T10:07:31.000Z">
+<meta property="article:author" content="Gocy">
+<meta property="article:tag" content="iOS">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://blog.gocy.tech/2017/09/16/DetectingUselessCodeWithClang-p3/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh'
+  };
+</script>
+<title>如何使用 Clang Plugin 找到项目中的无用代码（Part 3） | Gocy's home page</title>
+  
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="تشغيل شريط التصفح" role="button">
     </div>
   </div>
 
-{% endblock %}
+  <div class="site-meta">
 
-{% block sidebar %}
-  {{ sidebar_template.render(true) }}
-{% endblock %}
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">Gocy's home page</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">把热爱的事情做好</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
 
 
-{% block script_extra %}
-  {% include '_scripts/pages/post-details.swig' %}
-{% endblock %}
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          المحتويات
+        </li>
+        <li class="sidebar-nav-overview">
+          عام
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%82%A3%E4%BA%9B%E6%9C%AA%E8%A2%AB%E8%80%83%E8%99%91%E7%9A%84%E6%83%85%E5%86%B5"><span class="nav-number">2.</span> <span class="nav-text">那些未被考虑的情况</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A4%9A%E6%96%87%E4%BB%B6%E7%9A%84%E6%84%8F%E4%B9%89"><span class="nav-number">2.1.</span> <span class="nav-text">多文件的意义</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%8D%E5%BE%97%E4%B8%8D%E8%AF%B4%E7%9A%84%E7%BB%A7%E6%89%BF"><span class="nav-number">2.2.</span> <span class="nav-text">不得不说的继承</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E8%A7%84%E8%8C%83%E7%9A%84%E9%87%8D%E8%A6%81%E6%80%A7"><span class="nav-number">2.3.</span> <span class="nav-text">代码规范的重要性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%8D%E8%80%83%E8%99%91%E7%9A%84%E7%B1%BB%E6%96%B9%E6%B3%95%E4%BB%A5%E5%8F%8A%E4%B8%8E%E4%B9%8B%E7%9B%B8%E5%85%B3%E7%9A%84%E5%A5%87%E6%80%AA%E9%97%AE%E9%A2%98"><span class="nav-number">2.4.</span> <span class="nav-text">不考虑的类方法以及与之相关的奇怪问题</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%96%E8%AF%91%E5%99%A8%E4%B8%8D%E6%98%AF%E6%83%B3%E6%8D%A2%E5%B0%B1%E8%83%BD%E6%8D%A2"><span class="nav-number">3.</span> <span class="nav-text">编译器不是想换就能换</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Gocy</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives">
+          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-name">المقالات</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">الوسوم</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh">
+    <link itemprop="mainEntityOfPage" href="https://blog.gocy.tech/2017/09/16/DetectingUselessCodeWithClang-p3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Gocy">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Gocy's home page">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          如何使用 Clang Plugin 找到项目中的无用代码（Part 3）
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">نُشر في</span>
+      
+
+      <time title="أُنشأ: 2017-09-16 10:11:56 / عُدل: 18:07:31" itemprop="dateCreated datePublished" datetime="2017-09-16T10:11:56+08:00">2017-09-16</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>经过前两篇文章的尝试，我们已经成功的实现了一个无用代码检查插件。但是一个成熟的项目，其中的代码复杂度远比前文的 Demo 要高得多，要想真正在项目工程中运行插件，检查无用代码，还有许多坑要踩。本篇文章中，我将分享自己在从 Demo -&gt; 实际项目的适配过程中所遇到的问题一些问题。</p>
+<a id="more"></a>
+<h3 id="那些未被考虑的情况"><a href="#那些未被考虑的情况" class="headerlink" title="那些未被考虑的情况"></a>那些未被考虑的情况</h3><h4 id="多文件的意义"><a href="#多文件的意义" class="headerlink" title="多文件的意义"></a>多文件的意义</h4><p>上篇文章中我曾提到过，Clang AST 是以单个文件为扫描单位的，那么 Clang 是如何在编译期处理多文件关系的呢？我做了一个小实验：<br>首先，创建两个新的文件，并在文件中定义两个不同的类：<br><img src = '/images/ClangPluginP3/AddNewFile.png' width = '420'/><br>随后在插件中，实现 <code>VisitObjCInterfaceDecl()</code> 的回调，并在方法体中打印文件名：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">VisitObjCInterfaceDecl</span><span class="params">(ObjCInterfaceDecl *interfaceDecl)</span></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (!isUserSourceCode(interfaceDecl))&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    DiagnosticsEngine &amp;D = Instance.getDiagnostics();</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> filename = Instance.getSourceManager().getFilename(interfaceDecl-&gt;getSourceRange().getBegin()).str();</span><br><span class="line">    <span class="keyword">int</span> diagID = D.getCustomDiagID(DiagnosticsEngine::Warning, <span class="string">&quot;HandlingFile : %0 &quot;</span>);</span><br><span class="line">    D.Report(interfaceDecl-&gt;getLocStart(), diagID) &lt;&lt; filename;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>反复进行 clean - build - clean - build，观察输出的 Warning，我们会发现 <code>SomeClass.h</code> 和 <code>SomeOtherClass.h</code> 的编译顺序并没有什么规律，二者互有先后。接下来，我们在 <code>SomeOtherClass.h</code> 中，加入语句 <code>#import &quot;SomeClass.h&quot;</code>，再重复上述操作，会发现 <code>SomeClass.h</code> 现在一定是先于 <code>SomeOtherClass.h</code> 编译的。</p>
+<p>这样的现象让我有了一个猜想：对于单个文件的编译，Clang 的做法是不是先递归解析所有 <code>#import</code> 的文件，随后再将当前文件解析成 AST 的呢？事实上，在 <code>ASTMergeAction.cpp</code> 中的 <code>void ASTMergeAction::ExecuteAction()</code> 方法中，我们可以看到，在调用 <code>AdaptedAction-&gt;ExecuteAction()</code> 之前（这个方法会调用 <code>ParseAST()</code> 并最终调用我们的 comsumer），有一个 <code>for</code> 循环，遍历的对文件进行 <code>Import</code> 操作，而在 <code>Decl *ASTImporter::Import(Decl *FromD)</code> 方法中，我们也确实看到了 <code>Importer.Visit(FromD)</code> 这样的语句。当然，需要将当前文件解析成语法树，我们并不需要优先把所有 <code>import</code> 语句所引用的头文件中的类先全部解析一遍，但我们的确有必要对这些文件进行一定程度的分析，建立起当前解析文件与这些头文件的依赖关系，毕竟语法树是语法分析所产生的结果，而依赖关系不全，我们是无法通过语法分析的。</p>
+<blockquote>
+<p>你可以尝试去生成一个不存在的类的实例，譬如 <code>DoNotExists *obj = [DoNotExist new]</code>，对该文件执行 <code>-ast-dump</code> 命令后，你不但会在语法树上方看到 error，同时，语法树上也不会存在该条语句的树节点。</p>
+</blockquote>
+<p>知道这些有什么意义呢？这意味着，我们可以放心的在当前语法树中，去利用各个 Clang 类中的方法，去寻找父类、寻找协议方法、寻找成员变量中的 public 方法，因为 Clang 保证在分析语法树时，所有依赖都已经被建立好了。但即便如此，我们也没有办法知道当前类中定义的方法，在其他文件中是否有被使用过。所以在一个项目工程中，我们是无法简单的直接在单个 AST 遍历完之后，直接进行分析并给出 Warning 的，我们只能输出当前文件中所有的方法定义和方法调用，等到整个项目编译完成后，再去做差集处理。</p>
+<h4 id="不得不说的继承"><a href="#不得不说的继承" class="headerlink" title="不得不说的继承"></a>不得不说的继承</h4><p>在 iOS 应用开发中，继承也是无法避开的话题。继承所带来的其中一项重要特性，便是多态（Polymorphism），多态特性也直接导致可继承方法实际作用对象的不确定性，我们可能实现一个虚基类，用于处理方法之间的调用关系，而由子类去决定方法的具体实现；我们当然也可能提供一个具有默认实现的基类，为子类提供基础功能。因此，当某一个方法调用时，我们需要将整条继承链上的对应方法都标记为已使用。这里我的思路是，在处理的方法定义以及调用时，并不直接以当前类的类名作为 key，而是沿着继承链一直向上寻找到该方法的顶层定义，以该类的类名作为 key，如此一来，在进行扫描时，我们就可以正确的处理继承方法的调用关系了。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">StringRef <span class="title">getTopBaseClassNameForMethod</span><span class="params">(ObjCInterfaceDecl *ID ,ObjCMethodDecl *MD)</span></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (!ID-&gt;getSuperClass())&#123;</span><br><span class="line">        <span class="keyword">return</span> ID-&gt;getName();</span><br><span class="line">    &#125;</span><br><span class="line">    ObjCInterfaceDecl *CID = ID;</span><br><span class="line">    <span class="keyword">while</span> (ObjCMethodDecl *SMD = CID-&gt;getSuperClass()-&gt;lookupMethod(MD-&gt;getSelector(), MD-&gt;isInstanceMethod(),<span class="literal">true</span>)) &#123;</span><br><span class="line">        CID = CID-&gt;getSuperClass();</span><br><span class="line">        <span class="keyword">if</span> (!CID-&gt;getSuperClass())&#123;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> CID-&gt;getName();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>另一个和继承相关的场景，便是协议方法在继承链中的表现，处理的思路和上面类似，定义一个递归向上寻找父类遵循的协议的查询方法，并检查这些协议方法并过滤即可。</p>
+<h4 id="代码规范的重要性"><a href="#代码规范的重要性" class="headerlink" title="代码规范的重要性"></a>代码规范的重要性</h4><p>在前文中，我们通过查找类遵循的协议，过滤掉了协议方法。但这其实非常依赖编码时的规范，我们通常会以 <code>id &lt;SomeProtocol&gt; protocolImplementor</code> 的形式接收协议对象，在 oc 中，遵循协议的声明仅仅是一个弱限制，实际上任意的 <code>id</code> 对象都可以被赋值给这个变量，而调用协议方法时，我们通常也是用 <code>respondsToSelector:</code> 方法检查我们的协议对象是否遵循该方法，这也就意味着，实际实现协议的类其实并不需要显示声明遵循该协议 <code>@interface SomeClass &lt;SomeProtocol&gt;</code>，只要其中实现了对应的方法，程序就可以正常运行。但这就导致在编译阶段，当我们扫描到这些方法，而类定义时又没有显示声明遵循对应协议的话，我们就无法识别该方法是协议方法，进而导致这些方法最终都被识别为无用方法。</p>
+<p>除了协议的问题之外，还存在这样一种情况：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//file 1</span></span><br><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">Base</span> : <span class="title">NSObject</span></span></span><br><span class="line">- (<span class="keyword">void</span>)publicMethod;</span><br><span class="line"><span class="keyword">@end</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">Base</span></span></span><br><span class="line">- (<span class="keyword">void</span>)publicMethod&#123;</span><br><span class="line">    [<span class="keyword">self</span> privateMethod];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)privateMethod&#123;</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@&quot;Private Base&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">@end</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//file 2</span></span><br><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">Derived</span> : <span class="title">Base</span></span></span><br><span class="line"><span class="keyword">@end</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">Derived</span></span></span><br><span class="line">- (<span class="keyword">void</span>)privateMethod&#123;</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@&quot;Private Derived&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">@end</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//somewhere else</span></span><br><span class="line">BaseClass *obj = [DerivedClass new];</span><br><span class="line">[obj publicMethod];</span><br></pre></td></tr></table></figure>
+<p>上面的代码运行起来，控制台会输出 <code>Private Derived</code>，而如果我们注释掉 <code>Derived</code> 子类中的 <code>-(void)privateMethod</code> 实现，控制台会输出 <code>Private Base</code>，所以其实在运行时，<code>Derived</code> 类完全继承了 <code>Base</code> 的所有代码，包括那些仅声明在 <code>.m</code> 文件中的代码，但由于该方法没有暴露在基类头文件中，我们在分析 <code>Derived</code> 类的 AST 时，无法知道该方法是继承方法（事实上，在这种情况下，Xcode 的自动补全也是不起作用的，可见 Clang 无法处理这种继承关系），从而导致前面说到的方法调用作用于整个继承链的机制失效。同时我们也应该尽量避免这种情况，毕竟这本来就会导致语义不明，子类不应该出现和基类同名的非继承方法，基类也应该把所有可继承方法放置到头文件中。</p>
+<h4 id="不考虑的类方法以及与之相关的奇怪问题"><a href="#不考虑的类方法以及与之相关的奇怪问题" class="headerlink" title="不考虑的类方法以及与之相关的奇怪问题"></a>不考虑的类方法以及与之相关的奇怪问题</h4><p>本文还忽略了对于类方法的判别，由于类本身也是对象，因此其大部分扫描逻辑是可以复用我们已有的逻辑的，但却也确实存在一些问题，考虑如下代码：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">Manager</span> ()</span></span><br><span class="line"><span class="keyword">@end</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">Manager</span></span></span><br><span class="line">+ (<span class="keyword">instancetype</span>)sharedManager&#123;</span><br><span class="line">    <span class="comment">// do things when declaring singleton...</span></span><br><span class="line">    shared = [[<span class="keyword">self</span> alloc] initPrivate]; <span class="comment">//1</span></span><br><span class="line">    <span class="keyword">return</span> shared;</span><br><span class="line">&#125;</span><br><span class="line">+ (<span class="keyword">void</span>)aClassMethod&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line">- (<span class="keyword">instancetype</span>)initPrivate&#123;</span><br><span class="line">    <span class="comment">//do some custom init</span></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">self</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)anInstanceMethod&#123;</span><br><span class="line">    [[<span class="keyword">self</span> <span class="keyword">class</span>] aClassMethod]; <span class="comment">//2</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">@end</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//somewhere else</span></span><br><span class="line">[Manager aClassMethod]; <span class="comment">//3</span></span><br></pre></td></tr></table></figure>
+<p>上面的 1,2,3 在 AST 中都是标准的 <code>ObjCMessageExpr</code> 节点，但只有第三条语句 <code>[Manager aClassMethod]</code> 可以通过 <code>getReceiverInterface()</code> 拿到接收消息的对象，也就是 <code>Manager</code> 类对象，而对于 <code>initPrivate</code> 和 <code>aClassMethod</code> 所对应的 <code>[self alloc]</code> 以及 <code>[self class]</code> 这两个对象，通过 <code>getReceiverInterface()</code> 方法返回的均是 <code>nullptr</code>，目前我还没能确定要如何处理这种情况，只是简单的在拿不到 RecevierInterface 的情况下，取定义该方法的类假定为接收者。</p>
+<h3 id="编译器不是想换就能换"><a href="#编译器不是想换就能换" class="headerlink" title="编译器不是想换就能换"></a>编译器不是想换就能换</h3><p>还记得在首篇文章中，我们在项目的 Build Settings 中添加了 CC 和 CXX 的寻找路径吗？这样是为了让 Xcode 使用我们本地编译的 Clang 来编译 C、C++ 代码。但实际上，Xcode 自带的 Clang 和我们自行编译的 Clang 是有许多不同的，不论是最终编译的版本：<br><img src = '/images/ClangPluginP3/ClangVersions.png' width = '750'/><br>还是编译输出路径下的文件：<br><img src = '/images/ClangPluginP3/ClangFolders.png' width = '800'/><br>如果你的项目中有诸如 <code>#include &lt;string&gt;</code> 这样的引用，在使用本地 Clang 编译时，Xcode 会提示头文件找不到，这正是因为，Xcode 版本的 Clang 多出了一些文件：<br><img src = '/images/ClangPluginP3/ExtraHeader.png' width = '750'/><br><img src = '/images/ClangPluginP3/ExtraLib.png' width = '460'/><br>这些头文件/库文件中是对 <code>std</code> 库以及其他一系列 C/C++ 基础库的封装实现，这里似乎是 Xcode Clang 内置了这几个路径的 search path，所以可以找到这些头文件，而我们本地编译的 Clang 并没有这些文件，因此编译阶段无法找到。解决方法是在 Build Settings 的 Header Search Path 和 Library Search Path 中添加对应的目录路径即可。最后，Clean and build，静静的等待编译完成并检查扫描到的无用函数吧！</p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>本篇文章探讨了将插件由示例工程转接到实际项目工程的过程中可能出现的问题，当然或许在你的项目中，你会遇到一些本文未提及的问题，这时候就需要仔细的查阅文档、善用搜索引擎并且进行大胆的尝试啦！利用 Clang AST，除了无用代码扫描，我们还有许多事情可以做，我们可以静态检查代码规范、命名规范，应用一些特殊的限制等等。简而言之：静态阶段所能确定、能被获取到的信息，都可以为我们所用，用于获取信息、添加检查。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/iOS/" rel="tag"># iOS</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2017/09/13/DetectingUselessCodeWithClang-p2/" rel="prev" title="如何使用 Clang Plugin 找到项目中的无用代码（Part 2）">
+                  <i class="fa fa-chevron-left"></i> 如何使用 Clang Plugin 找到项目中的无用代码（Part 2）
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2017/10/31/a-touch-of-react-native/" rel="next" title="React Native 初体验">
+                  React Native 初体验 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      const activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      const commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Gocy</span>
+</div>
+  <div class="powered-by">تطبيق الموقع <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>

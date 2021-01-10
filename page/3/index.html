@@ -1,23 +1,807 @@
-{% extends '_layout.swig' %}
-{% import '_macro/post.swig' as post_template %}
-{% import '_macro/sidebar.swig' as sidebar_template %}
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
 
-{% block title %} {{ config.title }} {% endblock %}
 
-{% block page_class %}
-  {% if is_home() %} page-home {% endif %}
-{% endblock %}
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
 
-{% block content %}
-  <section id="posts" class="posts-expand">
-    {% for post in page.posts %}
-      {{ post_template.render(post, true) }}
-    {% endfor %}
-  </section>
+<link rel="stylesheet" href="/css/main.css">
 
-  {% include '_partials/pagination.swig' %}
-{% endblock %}
 
-{% block sidebar %}
-  {{ sidebar_template.render(false) }}
-{% endblock %}
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.1/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"blog.gocy.tech","root":"/","images":"/images","scheme":"Muse","version":"8.2.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"بحث...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}};
+  </script>
+<meta property="og:type" content="website">
+<meta property="og:title" content="Gocy&#39;s home page">
+<meta property="og:url" content="https://blog.gocy.tech/page/3/index.html">
+<meta property="og:site_name" content="Gocy&#39;s home page">
+<meta property="og:locale">
+<meta property="article:author" content="Gocy">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://blog.gocy.tech/page/3/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : true,
+    isPost : false,
+    lang   : 'zh'
+  };
+</script>
+<title>Gocy's home page</title>
+  
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="تشغيل شريط التصفح" role="button">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">Gocy's home page</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">把热爱的事情做好</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-overview-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          المحتويات
+        </li>
+        <li class="sidebar-nav-overview">
+          عام
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Gocy</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives">
+          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-name">المقالات</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">الوسوم</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh">
+    <link itemprop="mainEntityOfPage" href="https://blog.gocy.tech/2016/11/19/iOS-touch-handling/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Gocy">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Gocy's home page">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2016/11/19/iOS-touch-handling/" class="post-title-link" itemprop="url">iOS触摸事件那点儿事</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">نُشر في</span>
+
+      <time title="أُنشأ: 2016-11-19 15:26:36" itemprop="dateCreated datePublished" datetime="2016-11-19T15:26:36+08:00">2016-11-19</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">عُدل في</span>
+        <time title="عُدل: 2017-12-29 18:20:16" itemprop="dateModified" datetime="2017-12-29T18:20:16+08:00">2017-12-29</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>这两天在实现我的<a target="_blank" rel="noopener" href="https://github.com/Gocy015/MotionExperiment">动画库Demo</a>的过程中，遇到一个令我有些疑惑的问题：在<code>parentView</code>上添加了<code>UITapGestureRecognizer</code>之后，<code>subview</code>中的<code>UITableView</code>实例无法正常响应点击事件了，但<code>UIButton</code>实例仍可以正常工作，经过一系列查阅资料和实验，终于理解了这是怎么一回事。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2016/11/19/iOS-touch-handling/#more" rel="contents">
+                تابع القراءة &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh">
+    <link itemprop="mainEntityOfPage" href="https://blog.gocy.tech/2016/11/14/calayer-implict-animation/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Gocy">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Gocy's home page">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2016/11/14/calayer-implict-animation/" class="post-title-link" itemprop="url">浅谈CALayer隐式动画</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">نُشر في</span>
+
+      <time title="أُنشأ: 2016-11-14 18:06:12" itemprop="dateCreated datePublished" datetime="2016-11-14T18:06:12+08:00">2016-11-14</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">عُدل في</span>
+        <time title="عُدل: 2017-04-24 16:28:48" itemprop="dateModified" datetime="2017-04-24T16:28:48+08:00">2017-04-24</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h3 id="说在前头"><a href="#说在前头" class="headerlink" title="说在前头"></a>说在前头</h3><p>对于许多使用过CAAnimation的开发者来说，“隐式动画”的概念应该并不陌生，简单地说，我们直接在代码中设置如下属性：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">layer.backgroundColor = newColor.cgColor</span><br><span class="line">layer.hidden = !layer.hidden</span><br><span class="line">layer.bounds = newRect</span><br><span class="line"></span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>系统将会默认创建一段动画，来animate对应<a target="_blank" rel="noopener" href="https://developer.apple.com/library/content/documentation/Cocoa/Conceptual/CoreAnimation_guide/AnimatableProperties/AnimatableProperties.html">属性</a>的变化。</p>
+<p>若想禁用或自定义这段动画的参数，可以调用<code>CATransaction</code>的<a target="_blank" rel="noopener" href="https://developer.apple.com/reference/quartzcore/catransaction">类方法</a>来实现自定义，当然，如果想要更完整的控制权，也可以创建一个<code>CAAnimation</code>的实例。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2016/11/14/calayer-implict-animation/#more" rel="contents">
+                تابع القراءة &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh">
+    <link itemprop="mainEntityOfPage" href="https://blog.gocy.tech/2016/09/28/using-asdk-layout/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Gocy">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Gocy's home page">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2016/09/28/using-asdk-layout/" class="post-title-link" itemprop="url">使用ASDK进行布局</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">نُشر في</span>
+
+      <time title="أُنشأ: 2016-09-28 10:57:39" itemprop="dateCreated datePublished" datetime="2016-09-28T10:57:39+08:00">2016-09-28</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">عُدل في</span>
+        <time title="عُدل: 2017-05-27 09:31:53" itemprop="dateModified" datetime="2017-05-27T09:31:53+08:00">2017-05-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>在<a href="/2016/09/10/asdk-sourcecode-reading/">上一篇文章</a>中，我们跟着源码，走了一遍ASDK异步绘制的流程，本篇将初步介绍/使用ASDK的布局系统，来探索并学习一下这个由Flexbox衍生而来的布局系统。</p>
+<p>如果你从未了解过ASDK的布局系统，那么阅读<a target="_blank" rel="noopener" href="http://asyncdisplaykit.org/docs/automatic-layout-basics.html">官方文档</a>或者是通过<a target="_blank" rel="noopener" href="http://nguyenhuy.github.io/froggy-asdk-layout/">这个小游戏</a>来入门，会是一个不错的选择。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2016/09/28/using-asdk-layout/#more" rel="contents">
+                تابع القراءة &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh">
+    <link itemprop="mainEntityOfPage" href="https://blog.gocy.tech/2016/09/10/asdk-sourcecode-reading/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Gocy">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Gocy's home page">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2016/09/10/asdk-sourcecode-reading/" class="post-title-link" itemprop="url">AsyncDisplayKit源码阅读笔记</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">نُشر في</span>
+
+      <time title="أُنشأ: 2016-09-10 10:17:48" itemprop="dateCreated datePublished" datetime="2016-09-10T10:17:48+08:00">2016-09-10</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">عُدل في</span>
+        <time title="عُدل: 2017-05-27 09:33:26" itemprop="dateModified" datetime="2017-05-27T09:33:26+08:00">2017-05-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>接触iOS以来，就一直对性能方面的知识颇感兴趣，但一直没(lan)时(de)间(kan)相关的知识，直到最近阅读了RunLoop相关的代码，也有了解到ASDK的异步绘制最终也是以主线程RunLoop为切入点，将绘制结果最终展示到屏幕上，所以跟着几篇文章，走了走ASDK的源码，希望能搞清楚这个库是如何高效的提升性能的。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2016/09/10/asdk-sourcecode-reading/#more" rel="contents">
+                تابع القراءة &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh">
+    <link itemprop="mainEntityOfPage" href="https://blog.gocy.tech/2016/09/03/runloop-source-reading/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Gocy">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Gocy's home page">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2016/09/03/runloop-source-reading/" class="post-title-link" itemprop="url">RunLoop学习笔记</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">نُشر في</span>
+
+      <time title="أُنشأ: 2016-09-03 10:25:03" itemprop="dateCreated datePublished" datetime="2016-09-03T10:25:03+08:00">2016-09-03</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">عُدل في</span>
+        <time title="عُدل: 2017-04-24 16:29:17" itemprop="dateModified" datetime="2017-04-24T16:29:17+08:00">2017-04-24</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>最近开发中遇到了一些问题，再次又看起了RunLoop的相关知识，发现“纸上得来终觉浅”，还是得看看源码。首先整理一些比较好的RunLoop概念介绍和入门的文章：</p>
+<p><a target="_blank" rel="noopener" href="http://v.youku.com/v_show/id_XODgxODkzODI0.html?beta&">sunnyxx线下Runloop分享会</a></p>
+<p><a target="_blank" rel="noopener" href="http://blog.ibireme.com/2015/05/18/runloop/">《深入理解RunLoop》 Garan no Dou</a></p>
+<h3 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h3><p>一个视频一篇文章，基本就能对RunLoop的运作机制有个大致了解了，总的来说：</p>
+<p>1.RunLoop通常和线程是一对一的关系（一个线程中只能有一个RunLoop，但这个RunLoop中允许有子RunLoop的存在），这点很好理解，因为从源码上来看，RunLoop就是一个do-while的阻塞线程的循环，因此不可能在同一线程中同时有两个RunLoop。</p>
+<p>2.iOS中，许多事件管理、分发都与跑在主线程的RunLoop有关（NSTimer的实现，UI绘制的调用，用户交互事件的响应等等），RunLoop把这些事件分为：Timer事件、Source事件(包含source0、source1，source0可以理解为用户级事件，如触摸事件，是不能唤醒RunLoop的，source1是系统级的事件，RunLoop在休眠时监听特定的port，当这些port有消息传来时，RunLoop就会被唤醒。)</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2016/09/03/runloop-source-reading/#more" rel="contents">
+                تابع القراءة &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh">
+    <link itemprop="mainEntityOfPage" href="https://blog.gocy.tech/2016/06/14/a-trip-to-yunnan/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Gocy">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Gocy's home page">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2016/06/14/a-trip-to-yunnan/" class="post-title-link" itemprop="url">云南游小记</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">نُشر في</span>
+
+      <time title="أُنشأ: 2016-06-14 21:09:32" itemprop="dateCreated datePublished" datetime="2016-06-14T21:09:32+08:00">2016-06-14</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">عُدل في</span>
+        <time title="عُدل: 2018-01-25 20:04:30" itemprop="dateModified" datetime="2018-01-25T20:04:30+08:00">2018-01-25</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>借着实习和正式入职之间的间隙，报了个<a target="_blank" rel="noopener" href="http://www.tuniu.com/tours/210049553">途牛团(我这真不是打广告)</a>去云南玩了一圈，记录一下所见所闻所感。</p>
+<h3 id="准备阶段"><a href="#准备阶段" class="headerlink" title="准备阶段"></a>准备阶段</h3><p>这里还是不得不小喷一下途牛，由于是散团拼团，所以出团通知在出行前1~2天才发出，由于下订单的时候只留了个手机号，没有留邮箱，所以迟迟没有接到出团通知，打电话咨询了才把机票信息、接机联系人信息发过来（明明可以发短信又留了手机号，结果说没留邮箱所以没发出团信息）。</p>
+<p>云南偏北、行程中包含香格里拉、玉龙雪山等高海拔地区，所以大夏天的我一个广东人硬是带上了毛衣秋裤。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2016/06/14/a-trip-to-yunnan/#more" rel="contents">
+                تابع القراءة &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh">
+    <link itemprop="mainEntityOfPage" href="https://blog.gocy.tech/2016/05/27/first-blog/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Gocy">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Gocy's home page">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2016/05/27/first-blog/" class="post-title-link" itemprop="url">第一篇文章</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">نُشر في</span>
+      
+
+      <time title="أُنشأ: 2016-05-27 18:14:53 / عُدل: 18:36:39" itemprop="dateCreated datePublished" datetime="2016-05-27T18:14:53+08:00">2016-05-27</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="终于开始写博客了"><a href="#终于开始写博客了" class="headerlink" title="终于开始写博客了"></a>终于开始写博客了</h2><p>大二在指导老师的强烈建议下，开始在<a target="_blank" rel="noopener" href="http://blog.csdn.net/gocy015">CSDN</a>记录一些学习心得等等，然而觉得CSDN实在是太丑了，加上写一篇博客耗时很久，所以没能坚持下来。</p>
+<p>现在临近毕业，又觉得确实记录一些技术/生活上的东西非常有必要，终于在**<a target="_blank" rel="noopener" href="http://w3ctrain.com/">楷哥</a>**的帮助下有了一个勉强能看的博客</p>
+<p>好了，Blog’s ready</p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+  <nav class="pagination">
+    <a class="extend prev" rel="prev" href="/page/2/"><i class="fa fa-angle-left" aria-label="الصفحة السابقة"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span>
+  </nav>
+
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      const activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      const commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Gocy</span>
+</div>
+  <div class="powered-by">تطبيق الموقع <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>

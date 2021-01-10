@@ -1,38 +1,390 @@
-{% extends '_layout.swig' %}
-{% import '_macro/post.swig' as post_template %}
-{% import '_macro/sidebar.swig' as sidebar_template %}
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
 
 
-{% block title %} {{ page.title }} | {{ config.title }} {% endblock %}
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
 
-{% block page_class %}page-post-detail{% endblock %}
+<link rel="stylesheet" href="/css/main.css">
 
 
-{% block content %}
 
-  <div id="posts" class="posts-expand">
-    {{ post_template.render(page) }}
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.1/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
 
-    <div class="post-spread">
-      {% if theme.jiathis %}
-        {% include '_partials/share/jiathis.swig' %}
-      {% elseif theme.baidushare %}
-        {% include '_partials/share/baidushare.swig' %}
-      {% elseif theme.add_this_id %}
-        {% include '_partials/share/add-this.swig' %}
-      {% elseif theme.duoshuo_shortname and theme.duoshuo_share %}
-        {% include '_partials/share/duoshuo_share.swig' %}
-      {% endif %}
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"blog.gocy.tech","root":"/","images":"/images","scheme":"Muse","version":"8.2.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"بحث...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}};
+  </script>
+<meta name="description" content="最近在用 Swift 开发一个有记录文件目录层级功能的 command line，顺便学习一下 Swift4 的新特性，而开发过程中遇到了有关于泛型和协议的一些问题，经过探索后写下本文进行记录。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="浅谈 Swift4 中的泛型与协议">
+<meta property="og:url" content="https://blog.gocy.tech/2018/01/04/swift-generic-and-protocol/index.html">
+<meta property="og:site_name" content="Gocy&#39;s home page">
+<meta property="og:description" content="最近在用 Swift 开发一个有记录文件目录层级功能的 command line，顺便学习一下 Swift4 的新特性，而开发过程中遇到了有关于泛型和协议的一些问题，经过探索后写下本文进行记录。">
+<meta property="og:locale">
+<meta property="og:image" content="https://blog.gocy.tech/images/SwiftGenericAndProtocol/intellisense-mistake.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/SwiftGenericAndProtocol/why-generic.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/SwiftGenericAndProtocol/generic-force-type.png">
+<meta property="article:published_time" content="2018-01-04T10:15:18.000Z">
+<meta property="article:modified_time" content="2018-01-04T13:11:18.000Z">
+<meta property="article:author" content="Gocy">
+<meta property="article:tag" content="iOS">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://blog.gocy.tech/images/SwiftGenericAndProtocol/intellisense-mistake.png">
+
+
+<link rel="canonical" href="https://blog.gocy.tech/2018/01/04/swift-generic-and-protocol/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh'
+  };
+</script>
+<title>浅谈 Swift4 中的泛型与协议 | Gocy's home page</title>
+  
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="تشغيل شريط التصفح" role="button">
     </div>
   </div>
 
-{% endblock %}
+  <div class="site-meta">
 
-{% block sidebar %}
-  {{ sidebar_template.render(true) }}
-{% endblock %}
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">Gocy's home page</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">把热爱的事情做好</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
 
 
-{% block script_extra %}
-  {% include '_scripts/pages/post-details.swig' %}
-{% endblock %}
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          المحتويات
+        </li>
+        <li class="sidebar-nav-overview">
+          عام
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E7%BD%AE%E9%98%85%E8%AF%BB"><span class="nav-number">1.</span> <span class="nav-text">前置阅读</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%97%AE%E9%A2%98%E6%8F%8F%E8%BF%B0"><span class="nav-number">2.</span> <span class="nav-text">问题描述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B3%9B%E5%9E%8B%EF%BC%9F%E5%8D%8F%E8%AE%AE%EF%BC%9F"><span class="nav-number">3.</span> <span class="nav-text">泛型？协议？</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%B3%9B%E5%9E%8B"><span class="nav-number">3.1.</span> <span class="nav-text">泛型</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="nav-number">4.</span> <span class="nav-text">解决方案</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%97%A0%E5%A5%88%E7%9A%84%E5%A6%A5%E5%8D%8F"><span class="nav-number">5.</span> <span class="nav-text">无奈的妥协</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Gocy</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives">
+          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-name">المقالات</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">الوسوم</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh">
+    <link itemprop="mainEntityOfPage" href="https://blog.gocy.tech/2018/01/04/swift-generic-and-protocol/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Gocy">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Gocy's home page">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          浅谈 Swift4 中的泛型与协议
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">نُشر في</span>
+      
+
+      <time title="أُنشأ: 2018-01-04 18:15:18 / عُدل: 21:11:18" itemprop="dateCreated datePublished" datetime="2018-01-04T18:15:18+08:00">2018-01-04</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>最近在用 Swift 开发一个有记录文件目录层级功能的 command line，顺便学习一下 Swift4 的新特性，而开发过程中遇到了有关于泛型和协议的一些问题，经过探索后写下本文进行记录。</p>
+<a id="more"></a>
+
+<h3 id="前置阅读"><a href="#前置阅读" class="headerlink" title="前置阅读"></a>前置阅读</h3><p>本文会涉及到 <a target="_blank" rel="noopener" href="https://developer.apple.com/library/content/documentation/Swift/Conceptual/Swift_Programming_Language/Generics.html">Swift 泛型</a> 以及 <a target="_blank" rel="noopener" href="https://developer.apple.com/documentation/swift/codable">Swift Codable 协议</a>，如果你还不了解这两块的知识，欢迎点击链接查看官方文档，另外，关于 Swift4 中内建对 JSON 序列化的支持，<a target="_blank" rel="noopener" href="https://www.raywenderlich.com/172145/encoding-decoding-and-serialization-in-swift-4">RayWenderlich 上的一篇教程</a> 也值得一看。</p>
+<blockquote>
+<p>本文执笔时，Swift 语言的版本为 4.0.3，由于 Swift 仍在高速发展，本文的内容在日后不一定正确。</p>
+</blockquote>
+<h3 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h3><p>前面说到的“文件目录层级记录功能”，主要就是递归记录指定文件目录下的文件夹/文件，最终输出一份 JSON 记录文件：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="string">&quot;name&quot;</span>:<span class="string">&quot;rootDir/&quot;</span>,</span><br><span class="line">    <span class="string">&quot;children&quot;</span>:[</span><br><span class="line">        &#123; </span><br><span class="line">            <span class="string">&quot;name&quot;</span>:<span class="string">&quot;header.h&quot;</span> <span class="comment">//a file</span></span><br><span class="line">        &#125;,</span><br><span class="line">        &#123; </span><br><span class="line">            <span class="string">&quot;name&quot;</span>:<span class="string">&quot;secondaryDir&quot;</span>, <span class="comment">// another directory</span></span><br><span class="line">            <span class="string">&quot;children&quot;</span>:[...]</span><br><span class="line">        &#125;</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>而对应的，我写出了如下的代码：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">protocol</span> <span class="title">AbstractFileReference</span> : <span class="title">Codable</span></span>&#123;</span><br><span class="line">    <span class="keyword">var</span> name : <span class="type">String</span> &#123;<span class="keyword">get</span>&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">FileRefenrece</span> : <span class="title">AbstractFileReference</span></span>&#123;</span><br><span class="line">    <span class="keyword">let</span> name: <span class="type">String</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">GroupReference</span> : <span class="title">AbstractFileReference</span> </span>&#123;</span><br><span class="line">    <span class="keyword">let</span> name: <span class="type">String</span></span><br><span class="line">    <span class="keyword">let</span> children: [<span class="type">AbstractFileReference</span>]<span class="operator">?</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//... 一系列操作</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> rootRef : <span class="type">AbstractFileReference</span> <span class="operator">=</span> getRef()</span><br><span class="line"><span class="keyword">let</span> jsonData <span class="operator">=</span> <span class="type">JSONEncoder</span>().encode(rootRef)</span><br><span class="line"></span><br><span class="line"><span class="comment">//.. 拿到 jsondata 就可以为所欲为啦</span></span><br></pre></td></tr></table></figure>
+<p>在构造完文件树结构之后，我原本是想着这段代码能够 “It just works.” 的，毕竟 <code>AbstractFileReference</code> 中仅定义了基础类型 <code>String</code>。<br>然而编译器却出现了 Error：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">type &#39;GroupReference&#39; does not conform to protocol &#39;Decodable&#39;</span><br></pre></td></tr></table></figure>
+<p>作为对比，<code>FileReference</code> 是通过了编译的，也就是说编译器对于嵌套复杂数据类型的支持有限，好吧，那我们来实现一下 <code>Encodable &amp; Decodable</code> 协议，为了省略篇幅，只贴 <code>encode</code> 部分代码：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">encode</span><span class="params">(to encoder: Encoder)</span></span> <span class="keyword">throws</span> &#123;</span><br><span class="line">    <span class="keyword">var</span> container <span class="operator">=</span> encoder.container(keyedBy: <span class="type">CodingKeys</span>.<span class="keyword">self</span>)</span><br><span class="line">    <span class="keyword">try</span> container.encode(<span class="keyword">self</span>.name, forKey: .name)</span><br><span class="line">    <span class="keyword">var</span> childrenContainer <span class="operator">=</span> container.nestedUnkeyedContainer(forKey: .children)</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">let</span> validChildren <span class="operator">=</span> <span class="keyword">self</span>.children, validChildren.count <span class="operator">&gt;</span> <span class="number">0</span> &#123;</span><br><span class="line">        <span class="keyword">for</span> child <span class="keyword">in</span> validChildren&#123;</span><br><span class="line">            childrenContainer.encode(child) <span class="comment">// error : cannot invoke &#x27;encode&#x27; with an argument list of type &#x27;(AbstractFileReference)&#x27;</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>到此，引出了本文的主角错误：<code>cannot invoke &#39;encode&#39; with an argument list of type &#39;(AbstractFileReference)&#39;</code></p>
+<h3 id="泛型？协议？"><a href="#泛型？协议？" class="headerlink" title="泛型？协议？"></a>泛型？协议？</h3><p>编译器给出的提示是参数类型不匹配，然而智能补全给我的提示让我摸不着头脑：<br><img src='/images/SwiftGenericAndProtocol/intellisense-mistake.png' width = 520></img><br>看起来，<code>encode</code> 方法接受一个 <code>Encodable</code> 类型的参数，而此处我传入的 <code>child</code> 是遵循 <code>Codable</code> 协议的，但似乎这是智能补全的一个 bug（或者是 feature？），实际上 <code>encode</code> 方法是一个泛型方法：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">mutating</span> <span class="function"><span class="keyword">func</span> <span class="title">encode</span>&lt;T&gt;<span class="params">(<span class="keyword">_</span> value: T)</span></span> <span class="keyword">throws</span> <span class="keyword">where</span> <span class="type">T</span> : <span class="type">Encodable</span></span><br></pre></td></tr></table></figure>
+<p>协议我想大家都很熟悉了，协议定义了一套“行为规范”，遵从协议的类/结构体需要实现对应的方法/变量，以供使用者调用。协议提取出“做什么”，而不在乎怎么做，将依赖抽象化了。</p>
+<h4 id="泛型"><a href="#泛型" class="headerlink" title="泛型"></a>泛型</h4><p>泛型，在 C++ 中也称为模板，是一个和协议非常不一样的概念。如果说协议是一层解耦的抽象层，那么泛型更像是代码的搬运工。</p>
+<blockquote>
+<p>“在 C++ 中，编译器会为使用了模板的每个类型生成独立的模板化的函数或者类的实例。”<br>…<br>“不过 Swift 可以通过泛型特化 (generic specialization) 的方式来避免这个额外开销。泛型特化是指，编译器按照具体的参数参数类型 (比如 Int)，将 min<T> 这样的泛型类型或者函数进行复制。”</p>
+</blockquote>
+<blockquote>
+<p>摘录来自: Chris Eidhof. “Swift 进阶”。</p>
+</blockquote>
+<p>泛型某种意义上并不是抽象，只是简单的代码复用，或者说是编译器替你完成了<strong>代码拷贝</strong>，这也就是说，泛型之中的类型，是需要在编译期确定的，就像这个 <code>encode&lt;T&gt;</code> 方法，在编译器编译后实际生成了 <code>encode&lt;Int&gt;</code>，<code>encode&lt;Float&gt;</code>，<code>encode&lt;String&gt;</code> 等等方法（当然，具体看你有没有用到这一类型），再替换代码中的泛型调用，本质是静态派发；而协议则更多是动态派发（仅定义在协议扩展中的方法除外，这块更详细的内容可以参看 <a target="_blank" rel="noopener" href="https://objccn.io/products/advanced-swift/">《Swift 进阶》</a> 中的 “面向协议编程” 一章）。</p>
+<p>所以，此处编译器给出错误，是因为我们将运行时才能确定的值传给了一个需要静态确定类型的方法。</p>
+<p>而在接口设计时，泛型的使用往往是为了使参数在编译期就能得到类型上的保证，举个例子，标准库用于比较取小值的 <code>min</code> 函数：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">min</span>&lt;T: Comparable&gt;<span class="params">(<span class="keyword">_</span> x: T, <span class="keyword">_</span> y: T)</span></span> -&gt; <span class="type">T</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> y <span class="operator">&lt;</span> x <span class="operator">?</span> y : x</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>之所以不写成 <code>min(_ x: Comparable, _ y: Comparable) -&gt; Comparable</code> 是因为对比大小的两个参数不但需要可比，还应该是<strong>相同类型</strong>，拿整型和字符串对比显然是没有意义的，而取到的较小值，同样也应该和传入的参数为相同类型，因此，此处的泛型作用除了复用代码，还有一个作用就是保证编译期参数类型的确定性。<br><img src='/images/SwiftGenericAndProtocol/why-generic.png' width = 450></img><br><img src='/images/SwiftGenericAndProtocol/generic-force-type.png' width = 450></img></p>
+<h3 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h3><p><code>encode</code> 接口需要一个编译期可确定的参数，而此处 <code>children: [AbstractFileReference]?</code> 的类型的确是最符合当下实际场景的声明，怎么办呢？在 [stackoverflow 上的这个回答]  (<a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/44441223/encode-decode-array-of-types-conforming-to-protocol-with-jsonencoder">https://stackoverflow.com/questions/44441223/encode-decode-array-of-types-conforming-to-protocol-with-jsonencoder</a>) 以及 <a target="_blank" rel="noopener" href="https://objccn.io/products/advanced-swift/">《Swift 进阶》</a> 中的 “协议的两种类型” 一章中的 “类型抹消” 提出的解决方案都是将动态类型用另外一个静态类型包裹起来。</p>
+<blockquote>
+<p><em>“类型抹消”一节中的内容，是在讨论带有 <code>associatedType</code> 的协议类型被单独使用的场景，和我遇到的问题有共同点，但又不完全一样。</em></p>
+</blockquote>
+<p>但两种方法看起来都很不直观，“类型抹消” 中更是用到了继承，而将 <code>FileReference</code> 和 <code>GroupReference</code> 统一包裹成一个静态类型，就意味着需要额外存储字段，标识它是一个文件还是一个目录，而后再在读取时动态决定创建哪个结构体。这显然也不是我想看到的，我的初衷就是能够达到 JSON 数据与目标变量的直接转化。</p>
+<p>最后，我不得不在 <code>GroupReference</code> 的 <code>encode</code> 方法中，将协议类型 cast 成具体类型：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">encode</span><span class="params">(to encoder: Encoder)</span></span> <span class="keyword">throws</span> &#123;</span><br><span class="line">    <span class="keyword">var</span> container <span class="operator">=</span> encoder.container(keyedBy: <span class="type">CodingKeys</span>.<span class="keyword">self</span>)</span><br><span class="line">    <span class="keyword">try</span> container.encode(<span class="keyword">self</span>.name, forKey: .name)</span><br><span class="line">    <span class="keyword">var</span> childrenContainer <span class="operator">=</span> container.nestedUnkeyedContainer(forKey: .children)</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">let</span> validChildren <span class="operator">=</span> <span class="keyword">self</span>.children, validChildren.count <span class="operator">&gt;</span> <span class="number">0</span> &#123;</span><br><span class="line">        <span class="keyword">for</span> child <span class="keyword">in</span> validChildren&#123;</span><br><span class="line">            <span class="keyword">if</span> <span class="keyword">let</span> file <span class="operator">=</span> child <span class="keyword">as?</span> <span class="type">FileRefenrece</span>&#123;</span><br><span class="line">                <span class="keyword">try</span> childrenContainer.encode(file)</span><br><span class="line">            &#125;<span class="keyword">else</span> <span class="keyword">if</span> <span class="keyword">let</span> group <span class="operator">=</span> child <span class="keyword">as?</span> <span class="type">GroupReference</span>&#123;</span><br><span class="line">                <span class="keyword">try</span> childrenContainer.encode(group)</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>而与之对应，<code>init(from decoder:)</code> 方法，则是利用了类型不匹配会抛出错误的机制：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> <span class="operator">!</span>childrenContainer.isAtEnd&#123;</span><br><span class="line">    <span class="keyword">let</span> decodedChild : <span class="type">AbstractFileReference</span>?</span><br><span class="line">    <span class="keyword">do</span>&#123;</span><br><span class="line">        decodedChild <span class="operator">=</span> <span class="keyword">try</span> childrenContainer.decode(<span class="type">GroupReference</span>.<span class="keyword">self</span>)</span><br><span class="line">    &#125;<span class="keyword">catch</span>&#123;</span><br><span class="line">        <span class="keyword">do</span>&#123;</span><br><span class="line">            decodedChild <span class="operator">=</span> <span class="keyword">try</span> childrenContainer.decode(<span class="type">FileRefenrece</span>.<span class="keyword">self</span>)</span><br><span class="line">        &#125;<span class="keyword">catch</span>&#123;</span><br><span class="line">            decodedChild <span class="operator">=</span> <span class="literal">nil</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">let</span> validDecoded <span class="operator">=</span> decodedChild &#123;</span><br><span class="line">        children.append(validDecoded)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">self</span>.children <span class="operator">=</span> children.count <span class="operator">&gt;</span> <span class="number">0</span> <span class="operator">?</span> children : <span class="literal">nil</span></span><br></pre></td></tr></table></figure>
+<h3 id="无奈的妥协"><a href="#无奈的妥协" class="headerlink" title="无奈的妥协"></a>无奈的妥协</h3><p>尽管功能实现了，但上面的代码并不好看，可维护性也不高。</p>
+<p>本质上，泛型与协议似乎是有一些冲突的概念，<code>func someFunc&lt;T: someProtocol&gt;(param: T)</code> 实际上是为一个方法套上了双重限制：传入编译期可确定的类型作为参数、该类型遵循某个协议。而我们使用协议，很多时候又是因为我们想要动态派发、不想关心编译时具体的变量类型。日常开发中，使用协议将数据结构中的共性抽象似乎没有什么问题，但是当这样的数据结构碰上泛型接口时，我们似乎不得不将抽象重新转化回具体，想办法绕过这一语义上的限制。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/iOS/" rel="tag"># iOS</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2017/12/28/2017-Yearly/" rel="prev" title="2017年度总结">
+                  <i class="fa fa-chevron-left"></i> 2017年度总结
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/01/25/drawHierarchy-breaks-autolayout/" rel="next" title="屏幕截取与自动布局二三事">
+                  屏幕截取与自动布局二三事 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      const activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      const commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Gocy</span>
+</div>
+  <div class="powered-by">تطبيق الموقع <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>

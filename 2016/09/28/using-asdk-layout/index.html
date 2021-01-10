@@ -1,38 +1,441 @@
-{% extends '_layout.swig' %}
-{% import '_macro/post.swig' as post_template %}
-{% import '_macro/sidebar.swig' as sidebar_template %}
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
 
 
-{% block title %} {{ page.title }} | {{ config.title }} {% endblock %}
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
 
-{% block page_class %}page-post-detail{% endblock %}
+<link rel="stylesheet" href="/css/main.css">
 
 
-{% block content %}
 
-  <div id="posts" class="posts-expand">
-    {{ post_template.render(page) }}
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.1/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
 
-    <div class="post-spread">
-      {% if theme.jiathis %}
-        {% include '_partials/share/jiathis.swig' %}
-      {% elseif theme.baidushare %}
-        {% include '_partials/share/baidushare.swig' %}
-      {% elseif theme.add_this_id %}
-        {% include '_partials/share/add-this.swig' %}
-      {% elseif theme.duoshuo_shortname and theme.duoshuo_share %}
-        {% include '_partials/share/duoshuo_share.swig' %}
-      {% endif %}
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"blog.gocy.tech","root":"/","images":"/images","scheme":"Muse","version":"8.2.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"بحث...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}};
+  </script>
+<meta name="description" content="在上一篇文章中，我们跟着源码，走了一遍ASDK异步绘制的流程，本篇将初步介绍&#x2F;使用ASDK的布局系统，来探索并学习一下这个由Flexbox衍生而来的布局系统。 如果你从未了解过ASDK的布局系统，那么阅读官方文档或者是通过这个小游戏来入门，会是一个不错的选择。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用ASDK进行布局">
+<meta property="og:url" content="https://blog.gocy.tech/2016/09/28/using-asdk-layout/index.html">
+<meta property="og:site_name" content="Gocy&#39;s home page">
+<meta property="og:description" content="在上一篇文章中，我们跟着源码，走了一遍ASDK异步绘制的流程，本篇将初步介绍&#x2F;使用ASDK的布局系统，来探索并学习一下这个由Flexbox衍生而来的布局系统。 如果你从未了解过ASDK的布局系统，那么阅读官方文档或者是通过这个小游戏来入门，会是一个不错的选择。">
+<meta property="og:locale">
+<meta property="og:image" content="https://blog.gocy.tech/images/ASDKLayout1/Final.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/ASDKLayout1/Cell.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/ASDKLayout1/CellTag.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/ASDKLayout1/Final.gif">
+<meta property="og:image" content="https://blog.gocy.tech/images/ASDKLayout1/TextTooLong.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/ASDKLayout1/TextChangeLine.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/ASDKLayout1/TextTruncate.png">
+<meta property="article:published_time" content="2016-09-28T02:57:39.000Z">
+<meta property="article:modified_time" content="2017-05-27T01:31:53.000Z">
+<meta property="article:author" content="Gocy">
+<meta property="article:tag" content="iOS">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://blog.gocy.tech/images/ASDKLayout1/Final.png">
+
+
+<link rel="canonical" href="https://blog.gocy.tech/2016/09/28/using-asdk-layout/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh'
+  };
+</script>
+<title>使用ASDK进行布局 | Gocy's home page</title>
+  
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="تشغيل شريط التصفح" role="button">
     </div>
   </div>
 
-{% endblock %}
+  <div class="site-meta">
 
-{% block sidebar %}
-  {{ sidebar_template.render(true) }}
-{% endblock %}
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">Gocy's home page</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">把热爱的事情做好</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
 
 
-{% block script_extra %}
-  {% include '_scripts/pages/post-details.swig' %}
-{% endblock %}
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          المحتويات
+        </li>
+        <li class="sidebar-nav-overview">
+          عام
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Getting-Started"><span class="nav-number">1.</span> <span class="nav-text">Getting Started</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%90%86%E8%A7%A3ASLayoutSpec"><span class="nav-number">2.</span> <span class="nav-text">理解ASLayoutSpec</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8A%A8%E7%94%BB"><span class="nav-number">3.</span> <span class="nav-text">动画</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Gocy</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives">
+          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-name">المقالات</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">الوسوم</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh">
+    <link itemprop="mainEntityOfPage" href="https://blog.gocy.tech/2016/09/28/using-asdk-layout/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Gocy">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Gocy's home page">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          使用ASDK进行布局
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">نُشر في</span>
+
+      <time title="أُنشأ: 2016-09-28 10:57:39" itemprop="dateCreated datePublished" datetime="2016-09-28T10:57:39+08:00">2016-09-28</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">عُدل في</span>
+        <time title="عُدل: 2017-05-27 09:31:53" itemprop="dateModified" datetime="2017-05-27T09:31:53+08:00">2017-05-27</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>在<a href="/2016/09/10/asdk-sourcecode-reading/">上一篇文章</a>中，我们跟着源码，走了一遍ASDK异步绘制的流程，本篇将初步介绍/使用ASDK的布局系统，来探索并学习一下这个由Flexbox衍生而来的布局系统。</p>
+<p>如果你从未了解过ASDK的布局系统，那么阅读<a target="_blank" rel="noopener" href="http://asyncdisplaykit.org/docs/automatic-layout-basics.html">官方文档</a>或者是通过<a target="_blank" rel="noopener" href="http://nguyenhuy.github.io/froggy-asdk-layout/">这个小游戏</a>来入门，会是一个不错的选择。</p>
+<a id="more"></a>
+
+
+
+<blockquote>
+<p><strong><em>本文基于AsyncDisplayKit 1.9.90，即将发布的2.0版本可能会有变动</em></strong></p>
+</blockquote>
+<h3 id="Getting-Started"><a href="#Getting-Started" class="headerlink" title="Getting Started"></a>Getting Started</h3><p><a target="_blank" rel="noopener" href="https://www.facebook.com/scottgoodson">Scott Goodson</a>在介绍ASDK的各种宣讲会中反复提到，UIKit是一个非常强大的库，为了优化性能而摒弃这个库，重新写一套UI绘制渲染系统是没必要的，因此，ASDK更像是对UIKit的上层封装，但在布局系统这方面，ASDK则是完全丢弃了苹果的Autolayout或是VFL，转而自己实现了一套布局系统，在这套布局系统中，有以下几个核心概念：</p>
+<p><strong>1.ASLayoutable Protocol</strong></p>
+<p>顾名思义，可以被Layout的对象需要遵循这个protocol，协议的核心是结合各项配置，实现<code>- (ASLayout *)measureWithSizeRange:(ASSizeRange)constrainedSize;</code>方法，返回一个<code>ASLayout</code>对象供布局系统布局。ASDisplayNode及其子类、ASLayoutSpec及其子类，都遵循这个协议。</p>
+<p><strong>2.ASLayout</strong></p>
+<p>存储着ASDK可以“理解”的布局信息，供布局系统进行布局，这个类一般不会直接接触到(除非你需要自己实现一个LayoutSpec)，基本可以理解为，这个类存储了以下三个重要信息：**layout信息所作用的对象(layoutableObject)、layout的位置(position)、layout的大小(size)**。</p>
+<p><strong>3.ASLayoutSpec</strong></p>
+<p>ASLayout类存储着布局的信息，但若所有布局都要靠我们自己创建ASLayout对象，那几乎也就和纯手算然后setFrame没有太大区别了，<code>ASLayoutSpec</code>及其子类可以看做是一个上层接口，让开发者不必考虑复杂的构建<code>ASLayout</code>对象的过程，而通过这些LayoutSpec类来构造自己的布局，这个类及其子类将会是我们在开发的时候见到最多的。</p>
+<h3 id="理解ASLayoutSpec"><a href="#理解ASLayoutSpec" class="headerlink" title="理解ASLayoutSpec"></a>理解ASLayoutSpec</h3><p>利用ASDK的布局引擎所能获得的性能提升是不言而喻的，相比起在storyboard中拉几个constraints，亦或是借用<a target="_blank" rel="noopener" href="https://github.com/SnapKit/Masonry">Masonry</a>在代码中完成约束的建立，ASDK的布局系统还是稍稍复杂一些，先来Demo最终的效果：</p>
+<img src="/images/ASDKLayout1/Final.png" width="235">
+
+<p>Demo最终展现了一系列人物信息，并在点击”View Photo”按钮后，下载一张“高清写真”，按比例显示出来，同时，cell也相应的自动增高。</p>
+<p>在单纯利用UIKit布局的情况下，我们通常会这样做：从Storyboard中拉一个tableView，而后拉一个prototype cell，拖入UIImageView、UIButton、UILabel等控件，创建约束，而后创建一个UITableViewCell子类，拉取outlet，并在程序运行时为cell加载数据，为了让cell能自适应高度，我们可能还需要为estimatedRowHeight进行赋值等等。</p>
+<p>而使用ASDK的布局引擎，我们大致要做如下工作：</p>
+<p>为了让ASDK最大程度的进行性能优化，将UITableView转为ASTableNode，因为只有在诸如ASTableNode这样的<a target="_blank" rel="noopener" href="http://asyncdisplaykit.org/docs/containers-astablenode.html">NodeContainer</a>中，其中的content才能正确获得<a target="_blank" rel="noopener" href="http://asyncdisplaykit.org/docs/intelligent-preloading.html">Intelligent Preloading</a>的相关状态更新，然后，我们创建一个ASCellNode子类，来完成我们的人物头像、信息、按钮以及动态下载图片的逻辑。</p>
+<p>首先，我们在初始化的UIViewController子类中，加入ASTableNode：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)viewDidLoad &#123;</span><br><span class="line">    [<span class="keyword">super</span> viewDidLoad];</span><br><span class="line">    <span class="comment">// Do any additional setup after loading the view, typically from a nib.</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">self</span>.title = <span class="string">@&quot;Person of Interest&quot;</span>; </span><br><span class="line">    </span><br><span class="line">    [<span class="keyword">self</span> generateData];</span><br><span class="line">    </span><br><span class="line">    _tableNode = [[ASTableNode alloc] initWithStyle:<span class="built_in">UITableViewStylePlain</span>];</span><br><span class="line">    </span><br><span class="line">    _tableNode.delegate = <span class="keyword">self</span>;</span><br><span class="line">    _tableNode.dataSource = <span class="keyword">self</span>;</span><br><span class="line">    </span><br><span class="line">    [<span class="keyword">self</span>.view addSubnode:_tableNode];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>ASDK为UIView加入了一个Category，加入了<code>addSubnode:</code>接口，但对于一般的UIView实例而言，这里和<code>[view addSubview:node.view]</code>并无区别。</p>
+<p>而后，就像我们实现<code>UITableViewDataSource</code>一样，我们实现以下几个protocol方法(self.characters为数据源)：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">-(<span class="built_in">NSInteger</span>)numberOfSectionsInTableView:(<span class="built_in">UITableView</span> *)tableView&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">-(<span class="built_in">NSInteger</span>)tableView:(<span class="built_in">UITableView</span> *)tableView numberOfRowsInSection:(<span class="built_in">NSInteger</span>)section&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">self</span>.characters.count;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">-(ASCellNodeBlock)tableView:(ASTableView *)tableView nodeBlockForRowAtIndexPath:(<span class="built_in">NSIndexPath</span> *)indexPath&#123;</span><br><span class="line">    </span><br><span class="line">    __<span class="keyword">weak</span> <span class="keyword">typeof</span>(<span class="keyword">self</span>) wself = <span class="keyword">self</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> ^ASCellNode *&#123;</span><br><span class="line">        InfoCellNode *node = [[InfoCellNode alloc] initWithCharacterInfo:wself.characters[indexPath.row]];</span><br><span class="line">        node.delegate = wself;</span><br><span class="line">        <span class="keyword">return</span> node;</span><br><span class="line">    &#125;;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>其中，```objc<br>-(ASCellNodeBlock)tableView:nodeBlockForRowAtIndexPath: </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">类似于我们熟悉的&#96;cellForRowAtIndexPath&#96;，为ASTableNode返回一个ASCellNode实例，其实，与&#96;cellForRowAtIndexPath&#96;更相近的应该是另一个方法：</span><br><span class="line"></span><br><span class="line">&#96;&#96;&#96;objc </span><br><span class="line">-(ASCellNode *)tableView:nodeForRowAtIndexPath:</span><br></pre></td></tr></table></figure>
+<p>上述两个方法唯一的区别就是：为了提高性能，<code>nodeBlockForRowAtIndexPath:</code>方法的调用<strong>不一定在主线程</strong>，而<code>nodeForRowAtIndexPath:</code>则一定是在主线程调用的，因此，如果你的cellNode的构造直接依赖于UIView/CALayer，那么你就只能调用后者来构造你的cellNode了。</p>
+<p>接下来看看我们的cell类<code>InfoCellNode</code>是如何实现的：</p>
+<img src="/images/ASDKLayout1/Cell.png" width="320">
+
+<p>可以看到，除了Label和Button，我们有两个可能出现图片的地方，分别是头像和大图，两张图片都有一定程度的圆角，在UIKit中，实现圆角效果最常见的方法就是设置<code>layer.cornerRadius</code>，然而这样的做法会带来不小的性能消耗，我们此处采用的是使用ASDK的ASImageNode所提供的<code>imageModificationBlock</code>，来实现圆角效果，更多有关圆角的性能问题，官方文档的<a target="_blank" rel="noopener" href="http://asyncdisplaykit.org/docs/corner-rounding.html">这里</a>也有详细的说明。</p>
+<p>我们来看看两个ASNetworkImageNode的初始化代码：(代码在<code>InfoCellNode</code>的<code>init</code>方法中)</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line">        _headerNode = [ASNetworkImageNode new];</span><br><span class="line">        _headerNode.delegate = <span class="keyword">self</span>;</span><br><span class="line">        _headerNode.defaultImage = [<span class="keyword">self</span> placeholderImage];</span><br><span class="line">        _headerNode.imageModificationBlock = ^<span class="built_in">UIImage</span> *(<span class="built_in">UIImage</span> *originalImg)&#123;</span><br><span class="line">            <span class="built_in">UIGraphicsBeginImageContext</span>(originalImg.size);</span><br><span class="line">            </span><br><span class="line">            <span class="built_in">UIBezierPath</span> *path = [<span class="built_in">UIBezierPath</span> </span><br><span class="line">            			bezierPathWithRoundedRect:<span class="built_in">CGRectMake</span>(<span class="number">0</span>, <span class="number">0</span>, originalImg.size.width, originalImg.size.height) </span><br><span class="line">            						cornerRadius:MIN(originalImg.size.width,originalImg.size.height)/<span class="number">2</span>];</span><br><span class="line">            </span><br><span class="line">            [path addClip];</span><br><span class="line">            </span><br><span class="line">            [originalImg drawInRect:<span class="built_in">CGRectMake</span>(<span class="number">0</span>, <span class="number">0</span>, originalImg.size.width, originalImg.size.height)];</span><br><span class="line">            </span><br><span class="line">            <span class="built_in">UIImage</span> *refinedImg = <span class="built_in">UIGraphicsGetImageFromCurrentImageContext</span>();</span><br><span class="line">            </span><br><span class="line">            <span class="built_in">UIGraphicsEndImageContext</span>();</span><br><span class="line">            </span><br><span class="line">            <span class="keyword">return</span> refinedImg;</span><br><span class="line">        &#125;;</span><br><span class="line">        </span><br><span class="line">        [<span class="keyword">self</span> addSubnode:_headerNode];</span><br><span class="line">        </span><br><span class="line">        _photoNode = [AnimateNetworkImageNode new];</span><br><span class="line">        _photoNode.delegate = <span class="keyword">self</span>;</span><br><span class="line">        _photoNode.backgroundColor = [<span class="built_in">UIColor</span> clearColor];</span><br><span class="line"><span class="comment">//        _photoNode.defaultImage = [self placeholderImage];</span></span><br><span class="line">        _photoNode.imageModificationBlock = ^<span class="built_in">UIImage</span> *(<span class="built_in">UIImage</span> *originalImg)&#123;</span><br><span class="line">            </span><br><span class="line">			<span class="comment">//与头像类似的截取圆角逻辑。</span></span><br><span class="line">        &#125;;</span><br><span class="line">        </span><br><span class="line">        [<span class="keyword">self</span> addSubnode:_photoNode];</span><br><span class="line">        </span><br><span class="line">        </span><br><span class="line">        _detailNode = [ASButtonNode new];</span><br><span class="line">        [_detailNode setAttributedTitle:[[<span class="built_in">NSAttributedString</span> alloc] initWithString:<span class="string">@&quot;View Photo&quot;</span> attributes:[<span class="keyword">self</span> buttonNormalAttributes]] forState:ASControlStateNormal];</span><br><span class="line">        _detailNode.hitTestSlop = <span class="built_in">UIEdgeInsetsMake</span>(<span class="number">-6</span>, <span class="number">-6</span>, <span class="number">-6</span>, <span class="number">-6</span>);</span><br><span class="line">        </span><br><span class="line">        [_detailNode addTarget:<span class="keyword">self</span> action:<span class="keyword">@selector</span>(showPhoto) forControlEvents:ASControlNodeEventTouchUpInside];</span><br><span class="line">        [<span class="keyword">self</span> addSubnode:_detailNode];</span><br><span class="line">        <span class="comment">//...其他Node初始化</span></span><br><span class="line">        </span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>此处，我们为头像设置了一个<code>defaultImage</code>属性，也就是当图片尚未下载完的时候所显示的Placeholder，注意，此处我注释掉了<code>_photoNode.defaultImage = ...</code>的逻辑，主要是因为此处_photoNode需要根据下载下来的图片进行等比缩放，而在设置了<code>defaultImage</code>之后，缩放功能出现了一些问题，已经有国外友人在github上面提了<a target="_blank" rel="noopener" href="https://github.com/facebook/AsyncDisplayKit/issues/1362">issue</a>了。</p>
+<p>我们在buttonNode响应事件中，如果图片正在下载或已经下载完成，我们直接让cellNode重新布局，否则将大图的URL赋值给<code>_photoNode</code>，在其完成下载的delegate回调中，我们迫使cellNode重新布局：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">-(<span class="keyword">void</span>)showPhoto&#123;</span><br><span class="line"></span><br><span class="line">    _show = !_show; </span><br><span class="line">    <span class="built_in">NSString</span> *title = _show ? <span class="string">@&quot;Hide Photo&quot;</span> : <span class="string">@&quot;View Photo&quot;</span>;</span><br><span class="line">    </span><br><span class="line">    [_detailNode setAttributedTitle:[[<span class="built_in">NSAttributedString</span> alloc] initWithString:title attributes:[<span class="keyword">self</span> buttonNormalAttributes]] forState:ASControlStateNormal];</span><br><span class="line"></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (!_photoNode.URL &amp;&amp; [_info.photoUrl length]) &#123;</span><br><span class="line">        _photoNode.URL = [<span class="built_in">NSURL</span> URLWithString:_info.photoUrl];</span><br><span class="line">    &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">        [<span class="keyword">self</span> setNeedsLayout];</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">//Delegate</span></span><br><span class="line">-(<span class="keyword">void</span>)imageNode:(ASNetworkImageNode *)imageNode didLoadImage:(<span class="built_in">UIImage</span> *)image&#123;</span><br><span class="line">    </span><br><span class="line">	[<span class="keyword">self</span> setNeedsLayout];</span><br><span class="line">    </span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>另外需要注意的是，文本控件<code>ASTextNode</code>没有<code>.text</code>属性，也没有<code>.textAlignment</code>，对其文本的设置统一成对其<code>.attributedText</code>属性的设置，字体、字体颜色、对齐方式都在初始化<code>NSAttributedString</code>的<code>attributes</code>中进行设置。</p>
+<blockquote>
+<p><strong><em>ASDK 2.0之前的属性<code>.usesImplicitHierarchyManagement</code>或2.0之后的<code>.automaticallyManagesSubnodes</code>提供了很好地<a target="_blank" rel="noopener" href="http://asyncdisplaykit.org/docs/implicit-hierarchy-mgmt.html">Automatic Subnode Management</a>，我们不需要显示的调用<code>addSubnode:</code>，ASDK会在布局的时候自动检测，未被布局的node将不会被加入node hierarchy</em></strong></p>
+</blockquote>
+<p>接下来就是布局的过程了，我们再看看我们的布局：</p>
+<img src="/images/ASDKLayout1/CellTag.png" width="320">
+
+<p>我们可以先大致将整个Layout分为两部分：左边是头像以及按钮，右边是演员名字、角色名字，以及可能存在的大图。</p>
+<p>对于左边我们希望：头像与按钮纵向排列，并在竖直方向上置顶。</p>
+<p>对于右边：演员名、角色名、大图纵向排列。</p>
+<p>同时：我们希望当Label中的文本非常长的时候，我们能够进行截断/换行。</p>
+<p>首先，我们从简单的左侧布局做起，我们需要纵向布局，因此很自然想到使用<code>ASStackLayoutSpec</code>来进行布局，同时，我们需要让头像控件保持固定大小，而不是根据实际图片尺寸缩放，因此我们要指定<code>_headerNode</code>的大小，来看代码：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">-(ASLayoutSpec *)layoutSpecThatFits:(ASSizeRange)constrainedSize&#123;</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">NSMutableArray</span> *leftItems = [<span class="built_in">NSMutableArray</span> new];</span><br><span class="line">    _headerNode.preferredFrameSize = <span class="built_in">CGSizeMake</span>(<span class="number">60</span>, <span class="number">60</span>);</span><br><span class="line">    </span><br><span class="line">    [leftItems addObject:_headerNode];</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> ([_info.photoUrl length] &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        [leftItems addObject:_detailNode];</span><br><span class="line">    &#125;</span><br><span class="line">    ASStackLayoutSpec *leftStack = [ASStackLayoutSpec stackLayoutSpecWithDirection:ASStackLayoutDirectionVertical</span><br><span class="line">                                                                           spacing:<span class="number">6</span></span><br><span class="line">                                                                    justifyContent:ASStackLayoutJustifyContentStart</span><br><span class="line">                                                                        alignItems:ASStackLayoutAlignItemsCenter</span><br><span class="line">                                                                          children:leftItems];</span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line">    <span class="comment">//右侧布局 ...</span></span><br><span class="line">    </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>我们指定纵向Stack，则<code>justifyContent</code>参数指定的就是竖直方向上该Stack Children布局的相对位置，而<code>alignItems</code>则是水平方向上的对齐位置(这里的这些表现，和textAlignment很相似)。</p>
+<blockquote>
+<p><strong><em>在ASDK 2.0版本中，<code>.preferredFrameSize</code>被改为<code>width</code>、<code>height</code>等其他一系列属性，详见<a target="_blank" rel="noopener" href="https://github.com/facebook/AsyncDisplayKit/blob/master/AsyncDisplayKit/ASDisplayNode.h">最新版头文件</a></em></strong></p>
+</blockquote>
+<p>对于右侧的布局，稍稍复杂一些：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">-(ASLayoutSpec *)layoutSpecThatFits:(ASSizeRange)constrainedSize&#123;</span><br><span class="line">    </span><br><span class="line"> 	<span class="comment">//左侧布局 ...</span></span><br><span class="line">    </span><br><span class="line">    <span class="built_in">NSMutableArray</span> *rightItems = [<span class="built_in">NSMutableArray</span> new];</span><br><span class="line">    </span><br><span class="line">    ASStackLayoutSpec *infoStack = [ASStackLayoutSpec stackLayoutSpecWithDirection:ASStackLayoutDirectionVertical</span><br><span class="line">                                                                           spacing:<span class="number">2</span></span><br><span class="line">                                                                    justifyContent:ASStackLayoutJustifyContentCenter</span><br><span class="line">                                                                        alignItems:ASStackLayoutAlignItemsEnd</span><br><span class="line">                                                                          children:@[_actorNode,_roleNode]];</span><br><span class="line">     </span><br><span class="line">    infoStack.spacingBefore = <span class="number">20</span>;</span><br><span class="line">    infoStack.spacingAfter = <span class="number">6</span>;</span><br><span class="line">    </span><br><span class="line">    [rightItems addObject:infoStack];</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span>(_photoNode.image &amp;&amp; _show)&#123;</span><br><span class="line">        ASRatioLayoutSpec *photoRatio = [ASRatioLayoutSpec ratioLayoutSpecWithRatio:_photoNode.image.size.height / _photoNode.image.size.width child:_photoNode];</span><br><span class="line">        photoRatio.alignSelf = ASStackLayoutAlignSelfCenter;</span><br><span class="line">        [rightItems addObject:photoRatio];</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    ASStackLayoutSpec *rightStack = [ASStackLayoutSpec stackLayoutSpecWithDirection:ASStackLayoutDirectionVertical</span><br><span class="line">                                                                            spacing:<span class="number">8</span></span><br><span class="line">                                                                     justifyContent:ASStackLayoutJustifyContentStart</span><br><span class="line">                                                                         alignItems:ASStackLayoutAlignItemsEnd</span><br><span class="line">                                                                           children:rightItems];</span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line">    rightStack.flexGrow = rightStack.flexShrink = <span class="literal">YES</span>;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>类似于左侧布局，我们为node创建了一个纵向Stack布局，我们根据当前<code>_photoNode.image</code>是否非空(即是否下载完毕)来决定是否将其加入布局(此处其实可以将三个node放入同一个stack中，而不必进行嵌套)。</p>
+<p>StackLayout中指定了<code>.spaceBefore</code>,<code>.spaceAfter</code>属性的children，将在对应的布局方向上获得前置、后置的间隔。</p>
+<p>而对某个<code>ASLayoutable</code>的对象指定<code>.flexShrink</code>,<code>.flexGrow</code>则是表示，该对象所处在的LayoutSpec位置不足/多余时，其是否会自动缩小/扩充。对于一个<code>ASLayoutable</code>容器，它的缩小/扩充实质是对其children的缩小/扩充，而在它的children中，它仅仅会尝试压缩/扩充没有<code>intrinsicSize</code>的child以及<code>.flexShrink</code>，<code>.flexGrow</code>同样被设置成<code>YES</code>的child，此处我们将<code>rightStack</code>设为自动缩放，其实质是对其children的自动缩放，而<code>ASRatioLayoutSpec</code>是没有<code>intrinsicSize</code>的，因此可以正常缩放，但<code>infoStack</code>中的两个node都是<code>ASTextNode</code>，他们的<code>intrinsicSize</code>由其中的文本决定，因此此处，若不显示添加<code>node.flexShrink = YES</code>，<code>infoStack</code>将无法进行缩放。</p>
+<blockquote>
+<p><strong><em>ASDK 2.0之前，<code>.flexShrink</code>,<code>.flexGrow</code>默认为<code>NO</code>，2.0之后，将默认打开</em></strong></p>
+</blockquote>
+<p>最后，我们将左右拼合，塞入一个<code>ASInsetLayout</code>中，就完成了cell的布局：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">-(ASLayoutSpec *)layoutSpecThatFits:(ASSizeRange)constrainedSize&#123;</span><br><span class="line">    </span><br><span class="line"> 	<span class="comment">//左侧布局 ...</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">//右侧布局 ...</span></span><br><span class="line">    ASStackLayoutSpec *stack = [ASStackLayoutSpec stackLayoutSpecWithDirection:ASStackLayoutDirectionHorizontal</span><br><span class="line">                                                                       spacing:<span class="number">10</span></span><br><span class="line">                                                                justifyContent:ASStackLayoutJustifyContentStart</span><br><span class="line">                                                                    alignItems:ASStackLayoutAlignItemsStart</span><br><span class="line">                                                                      children:@[leftStack,rightStack]];</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> [ASInsetLayoutSpec insetLayoutSpecWithInsets:<span class="built_in">UIEdgeInsetsMake</span>(<span class="number">6</span>, <span class="number">10</span>, <span class="number">8</span>, <span class="number">10</span>) child:stack];</span><br><span class="line">    </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>效果：</p>
+<p><img src="/images/ASDKLayout1/Final.gif"></p>
+<p>接着，我们将字体调整一下，看看是否能够正常显示字体过长的情况：</p>
+<img src="/images/ASDKLayout1/TextTooLong.png" width="235">
+
+<p>Wow~这可不是我们想要的，回头想一想，刚刚提到了，当空间不足时，<code>rightStack</code>试图压缩其中的content，但是由于<code>_actorNode</code>是有实际大小的，因此不能被压缩，我们只要加上<code>_actorNode.flexShrink = YES;</code>，即可正常触发换行逻辑_（不过这些在ASDK 2.0之后，都不需要我们手工指定了）_：</p>
+<img src="/images/ASDKLayout1/TextChangeLine.png" width="235">
+
+<p>而如果在text过长时，采用截取而非换行的方式，只需要将<code>node.maximumNumberOfLines</code>设置为对应的最大行数，并在<code>node.truncationMode</code>中设置截取样式，即可得到截取的效果_(图为<code>maximumNumberOfLines = 1</code> , <code>truncationMode = NSLineBreakByTruncatingMiddle</code>)_：</p>
+<img src="/images/ASDKLayout1/TextTruncate.png" width="320">
+
+<h3 id="动画"><a href="#动画" class="headerlink" title="动画"></a>动画</h3><p>以往利用UIKit+Autolayout布局，当需要动画展示布局变化的时候，我们大概是这样做的：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[<span class="built_in">UIView</span> animateWithDuration:<span class="number">1</span> </span><br><span class="line">			animation:^&#123;</span><br><span class="line">			view.constraint = newConstraint;</span><br><span class="line">			view.constraint2 = newConstraint2;</span><br><span class="line">			[view setNeedsLayout];</span><br><span class="line">			[view.superview layoutIfNeeded];</span><br><span class="line">			&#125;];</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>但在ASDK的布局系统中，想要用动画展现布局的改变稍微麻烦一些，需要在相应的<code>ASDisplayNode</code>子类中重写<code>-(void)animateLayoutTransition:</code>方法，并将<code>setNeedsLayout</code>方法替换为<code>transitionLayoutWithAnimation:</code>，我在尝试添加动画的时候遇到了不少问题，而且相应的<a target="_blank" rel="noopener" href="http://asyncdisplaykit.org/docs/layout-transition-api.html">LayoutTransition API</a>也会在ASDK 2.0版本中有较大的变化，届时我探索清楚之后，将再补充此部分内容。</p>
+<p>本文中出现的代码可以在<a target="_blank" rel="noopener" href="https://github.com/Gocy015/POICharacterList">这里</a>进行下载，若发现有不正确的地方，欢迎指正。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/iOS/" rel="tag"># iOS</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2016/09/10/asdk-sourcecode-reading/" rel="prev" title="AsyncDisplayKit源码阅读笔记">
+                  <i class="fa fa-chevron-left"></i> AsyncDisplayKit源码阅读笔记
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2016/11/14/calayer-implict-animation/" rel="next" title="浅谈CALayer隐式动画">
+                  浅谈CALayer隐式动画 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      const activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      const commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Gocy</span>
+</div>
+  <div class="powered-by">تطبيق الموقع <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>

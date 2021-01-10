@@ -1,38 +1,434 @@
-{% extends '_layout.swig' %}
-{% import '_macro/post.swig' as post_template %}
-{% import '_macro/sidebar.swig' as sidebar_template %}
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
 
 
-{% block title %} {{ page.title }} | {{ config.title }} {% endblock %}
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
 
-{% block page_class %}page-post-detail{% endblock %}
+<link rel="stylesheet" href="/css/main.css">
 
 
-{% block content %}
 
-  <div id="posts" class="posts-expand">
-    {{ post_template.render(page) }}
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.1/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
 
-    <div class="post-spread">
-      {% if theme.jiathis %}
-        {% include '_partials/share/jiathis.swig' %}
-      {% elseif theme.baidushare %}
-        {% include '_partials/share/baidushare.swig' %}
-      {% elseif theme.add_this_id %}
-        {% include '_partials/share/add-this.swig' %}
-      {% elseif theme.duoshuo_shortname and theme.duoshuo_share %}
-        {% include '_partials/share/duoshuo_share.swig' %}
-      {% endif %}
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"blog.gocy.tech","root":"/","images":"/images","scheme":"Muse","version":"8.2.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"بحث...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}};
+  </script>
+<meta name="description" content="在 Objective-C 的世界中，对对象的方法调用都会被转为消息发送，通过 self 和 _cmd，在 method_list 中寻找对应的函数指针，最终触发函数调用。对于我们自己代码中的类，这很好理解，Runtime 会维护一个巨大的列表，存储着我们的类的信息。但对于系统 framework 中的类型呢？难道 Runtime 会在启动时预先将所有系统类也加载进来吗？更广义一点说，诸如 pri">
+<meta property="og:type" content="article">
+<meta property="og:title" content="跟着 WWDC 一起探秘符号解析的魔法">
+<meta property="og:url" content="https://blog.gocy.tech/2018/08/01/behindthescenes-symbol-resolve/index.html">
+<meta property="og:site_name" content="Gocy&#39;s home page">
+<meta property="og:description" content="在 Objective-C 的世界中，对对象的方法调用都会被转为消息发送，通过 self 和 _cmd，在 method_list 中寻找对应的函数指针，最终触发函数调用。对于我们自己代码中的类，这很好理解，Runtime 会维护一个巨大的列表，存储着我们的类的信息。但对于系统 framework 中的类型呢？难道 Runtime 会在启动时预先将所有系统类也加载进来吗？更广义一点说，诸如 pri">
+<meta property="og:locale">
+<meta property="article:published_time" content="2018-08-01T08:27:43.000Z">
+<meta property="article:modified_time" content="2018-08-03T10:53:11.000Z">
+<meta property="article:author" content="Gocy">
+<meta property="article:tag" content="iOS">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://blog.gocy.tech/2018/08/01/behindthescenes-symbol-resolve/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh'
+  };
+</script>
+<title>跟着 WWDC 一起探秘符号解析的魔法 | Gocy's home page</title>
+  
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="تشغيل شريط التصفح" role="button">
     </div>
   </div>
 
-{% endblock %}
+  <div class="site-meta">
 
-{% block sidebar %}
-  {{ sidebar_template.render(true) }}
-{% endblock %}
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">Gocy's home page</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">把热爱的事情做好</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
 
 
-{% block script_extra %}
-  {% include '_scripts/pages/post-details.swig' %}
-{% endblock %}
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          المحتويات
+        </li>
+        <li class="sidebar-nav-overview">
+          عام
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%A7%E9%80%8F%E5%9C%A8%E5%89%8D"><span class="nav-number">1.</span> <span class="nav-text">剧透在前</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8E%E6%B1%87%E7%BC%96%E8%AF%B4%E8%B5%B7"><span class="nav-number">2.</span> <span class="nav-text">从汇编说起</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8C%96%E6%8E%98-Mach-O"><span class="nav-number">3.</span> <span class="nav-text">挖掘 Mach-O</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Lazy-Binding"><span class="nav-number">4.</span> <span class="nav-text">Lazy Binding</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-number">5.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Gocy</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives">
+          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-name">المقالات</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">الوسوم</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh">
+    <link itemprop="mainEntityOfPage" href="https://blog.gocy.tech/2018/08/01/behindthescenes-symbol-resolve/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Gocy">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Gocy's home page">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          跟着 WWDC 一起探秘符号解析的魔法
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">نُشر في</span>
+
+      <time title="أُنشأ: 2018-08-01 16:27:43" itemprop="dateCreated datePublished" datetime="2018-08-01T16:27:43+08:00">2018-08-01</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">عُدل في</span>
+        <time title="عُدل: 2018-08-03 18:53:11" itemprop="dateModified" datetime="2018-08-03T18:53:11+08:00">2018-08-03</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>在 <code>Objective-C</code> 的世界中，对对象的方法调用都会被转为消息发送，通过 <code>self</code> 和 <code>_cmd</code>，在 method_list 中寻找对应的函数指针，最终触发函数调用。对于我们自己代码中的类，这很好理解，Runtime 会维护一个巨大的列表，存储着我们的类的信息。但对于系统 framework 中的类型呢？难道 Runtime 会在启动时预先将所有系统类也加载进来吗？更广义一点说，诸如 <code>printf</code> 这样的方法又是如何找到函数指针的呢？</p>
+<a id="more"></a>
+
+<h2 id="剧透在前"><a href="#剧透在前" class="headerlink" title="剧透在前"></a>剧透在前</h2><p>我们都知道，在 <code>.m</code> 中编写代码时，我们只需要引入 <code>.h</code> 头文件，就可以使用对应文件中定义的类与方法，而不需要关心对应实现。这是因为，在静态阶段，我们并不真正执行任何二进制代码，只是生成指令而已，因此，我们只需要知道我们希望调用的函数的 <strong>符号</strong>，而不需要知道地址。而这些符号，将在运行时被转化为实际的内存地址，以供调用。</p>
+<blockquote>
+<p><strong><em>事实上，由于大量系统库以及 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Address_space_layout_randomization">ASLR</a> 的存在，我们也不可能在静态阶段就得到所有实际代码的执行地址。</em></strong></p>
+</blockquote>
+<p>在 <code>macOS</code> 和 <code>iOS</code> 系统中，可执行文件的格式为 <a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/Mach-O">Mach-O</a>，<code>Mach-O</code> 内部一般由三个部分组成：</p>
+<img src = '/images/SymbolResolution/macho.jpeg' width = '820'/>
+
+<p>其中 <code>__TEXT</code> 段为存放应用代码以及常量的地方，为<strong>只读</strong>属性。<code>__DATA</code> 段存放全局变量、静态变量等数据，为<strong>读写</strong>属性。<code>__LINKEDIT</code> 存放着加载该二进制时的一些元数据。这张截图自 2016 年的 <a target="_blank" rel="noopener" href="https://developer.apple.com/videos/play/wwdc2016/406/">Optimizing App Startup Time</a>，对以上三个段的解释简短清晰，但也留下了一些问题：在我们自己编写的代码中，夹杂了对系统库的调用，这些调用在编译后会变成符号，但我们的代码最终是放在只读的 <code>__TEXT</code> 段的，系统要怎么把符号转成地址呢？另外 <code>__LINKEDIT</code> 又到底存放了哪些信息呢？</p>
+<h2 id="从汇编说起"><a href="#从汇编说起" class="headerlink" title="从汇编说起"></a>从汇编说起</h2><p>要弄清楚这些问题，就要先看看我们的代码经过编译，究竟会变成什么样，考虑如下代码：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">ViewController</span></span></span><br><span class="line">- (<span class="keyword">void</span>)viewDidLoad &#123;</span><br><span class="line">    <span class="built_in">NSDictionary</span> *obj = [<span class="built_in">NSDictionary</span> new];</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@&quot;%@&quot;</span>,obj);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
+<p>对应的汇编在精简后大概是这样（所有 .开头的均不是实际汇编代码）：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">&quot;-[ViewController viewDidLoad]&quot;:        ; @&quot;\01-[ViewController viewDidLoad]&quot;</span><br><span class="line">Lfunc_begin0:</span><br><span class="line">	sub	sp, sp, #48             ; &#x3D;48</span><br><span class="line">	stp	x29, x30, [sp, #32]     ; 8-byte Folded Spill</span><br><span class="line">	add	x29, sp, #32            ; &#x3D;32</span><br><span class="line">    </span><br><span class="line">	adrp	x8, l_OBJC_SELECTOR_REFERENCES_@PAGE</span><br><span class="line">	add	x8, x8, l_OBJC_SELECTOR_REFERENCES_@PAGEOFF</span><br><span class="line">	adrp	x9, l_OBJC_CLASSLIST_REFERENCES_$_@PAGE</span><br><span class="line">	add	x9, x9, l_OBJC_CLASSLIST_REFERENCES_$_@PAGEOFF</span><br><span class="line">	stur	x0, [x29, #-8]</span><br><span class="line">	str	x1, [sp, #16]</span><br><span class="line">Ltmp0:</span><br><span class="line">	ldr	x9, [x9]</span><br><span class="line">	ldr	x1, [x8]</span><br><span class="line">	mov	x0, x9</span><br><span class="line">	bl	_objc_msgSend</span><br><span class="line">	str	x0, [sp, #8]</span><br><span class="line">	ldr	x8, [sp, #8]</span><br><span class="line">	mov	x9, sp</span><br><span class="line">	str	x8, [x9]</span><br><span class="line">	adrp	x0, l__unnamed_cfstring_@PAGE</span><br><span class="line">	add	x0, x0, l__unnamed_cfstring_@PAGEOFF</span><br><span class="line">	bl	_NSLog</span><br><span class="line">	add	x9, sp, #8              ; &#x3D;8</span><br><span class="line">	mov	x0, x9</span><br><span class="line">	mov	x1, x8</span><br><span class="line">	bl	_objc_storeStrong</span><br><span class="line">	ldp	x29, x30, [sp, #32]     ; 8-byte Folded Reload</span><br><span class="line">	add	sp, sp, #48             ; &#x3D;48</span><br><span class="line">	ret</span><br></pre></td></tr></table></figure>
+<p>如果你不熟悉汇编，也没太大关系，其中大部分代码都是在往“正确”的寄存器里面塞参数，保证函数调用的正确性，我们关心的是这几句：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F; selector 以及 class 的符号</span><br><span class="line">adrp	x8, l_OBJC_SELECTOR_REFERENCES_@PAGE</span><br><span class="line">add	x8, x8, l_OBJC_SELECTOR_REFERENCES_@PAGEOFF</span><br><span class="line">adrp	x9, l_OBJC_CLASSLIST_REFERENCES_$_@PAGE</span><br><span class="line">add	x9, x9, l_OBJC_CLASSLIST_REFERENCES_$_@PAGEOFF</span><br><span class="line">&#x2F;&#x2F; 常量 string 的符号</span><br><span class="line">adrp	x0, l__unnamed_cfstring_@PAGE</span><br><span class="line">add	x0, x0, l__unnamed_cfstring_@PAGEOFF</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>你可以在 <a target="_blank" rel="noopener" href="http://infocenter.arm.com/help/index.jsp">ARM Information Center</a> 搜到 adrp 的详细文档，简单地说它就是用来取某个“符号”的地址的</p>
+</blockquote>
+<p>限于篇幅，我们先只关注其中 <code>NSDictionary</code> 相关的，在汇编代码中搜索 <code>l_OBJC_CLASSLIST_REFERENCES_</code>，最终可以发现他落在这样一个地方：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">.section	__DATA,__objc_classrefs,regular,no_dead_strip</span><br><span class="line">.p2align	3               ; @&quot;OBJC_CLASSLIST_REFERENCES_$_&quot;</span><br><span class="line">l_OBJC_CLASSLIST_REFERENCES_$_:</span><br><span class="line">.quad	_OBJC_CLASS_$_NSDictionary</span><br></pre></td></tr></table></figure>
+<p>可以看到，这个符号实际是在 <code>__DATA</code> 段中的，也就是说，我们在 <code>__TEXT</code> 中的符号，实际指向的是 <code>__DATA</code> 段里的东西</p>
+<h2 id="挖掘-Mach-O"><a href="#挖掘-Mach-O" class="headerlink" title="挖掘 Mach-O"></a>挖掘 Mach-O</h2><p>到这一步，我们就需要借助一些工具，来继续看看 <code>__DATA</code> 段又发生了什么事情，我个人使用 <a target="_blank" rel="noopener" href="https://sourceforge.net/projects/machoview/">MachOView</a> 来查看文件内部大体布局，用 <a target="_blank" rel="noopener" href="https://www.hopperapp.com/">Hopper</a> 来查看具体内存地址是什么。</p>
+<p>根据上面汇编代码给出的信息，我们很容易就可以在 <code>__objc_classrefs</code> 中找到我们的指针。</p>
+<img src = '/images/SymbolResolution/macho-classref.png'/>
+
+<p>我们利用 offset，在 <code>Hopper</code> 中跳到对应地址，将会看到另一条非常简单的汇编语句：</p>
+<img src = '/images/SymbolResolution/hopper-classref.png' width=520/>
+
+<p><code>Hopper</code> 提供非常强大的跳转功能，双击图中黄色高亮的符号，又可以跳到该符号定义的地方：</p>
+<img src = '/images/SymbolResolution/hopper-nsdictionary.png' width=520/>
+
+<p>如果你稍稍向上滑动一下，会发现这段代码对应在 <code>__DATA</code> 段的 <code>External Symbols Segment</code> 中，而除了我们的 <code>_OBJC_CLASS_$_NSDictionary</code>，还有诸如 <code>UIResponder</code>、<code>NSObject</code> 以及 <code>NSLog</code> 等等系统符号。就目前来看，符号最终指向了 <code>0x00</code>，也就是 <code>null</code>，这也是符合预期的，正如前文提到的，这些系统库在 runtime 时的地址是我们编译阶段无法确定的，需要在装载可执行文件时动态确定，也就是说，系统一定会在某个时机，将 <code>0x00</code> 改为实际地址。</p>
+<p>那么这一步发生在什么时候呢？</p>
+<img src = '/images/SymbolResolution/dyld-binding.jpeg' width=820/>
+
+<p>截图同样来自 <a target="_blank" rel="noopener" href="https://developer.apple.com/videos/play/wwdc2016/406/">Optimizing App Startup Time</a>，在系统动态加载 <code>Mach-O</code> 文件的时候，会经过 <code>Rebase</code> 以及 <code>Bind</code> 两个阶段，其中 <code>Rebase</code> 是将内部指针进行固定数值的偏移（slide），而 <code>Bind</code> 则正是用于将外部符号转为实际指针的步骤。在 2018 年的 <a target="_blank" rel="noopener" href="https://developer.apple.com/videos/play/wwdc2018/415/">Behind the Scenes of the Xcode Build Process</a> session 中也提到了这一个步骤：</p>
+<img src = '/images/SymbolResolution/catdemo.png' width=850/>
+
+<p>可以看到，整个流程 1-2-3-4 均和我们上面的分析相符，而上图中的最后一个步骤正是 <code>Bind</code>，<code>__LINKEDIT</code> 中的信息就是建立应用内符号到系统函数符号的映射。这时候我们打开 <code>MachOView</code> 找到对应 <code>Bind</code> 阶段的信息，可以发现 <code>_OBJC_CLASS_$_NSDictionary</code> 的确是在这一步完成绑定的。</p>
+<img src = '/images/SymbolResolution/binding.png' width=850/>
+
+<p>至此，符号解析的流程就走通了，<code>__TEXT</code> 中的代码段指向 <code>__DATA</code> 中的符号，在装载二进制时，系统会根据 <code>__LINKEDIT</code> 中的信息，再将 <code>__DATA</code> 中的符号和实际系统函数地址建立映射。</p>
+<h2 id="Lazy-Binding"><a href="#Lazy-Binding" class="headerlink" title="Lazy Binding"></a>Lazy Binding</h2><p>细心的你一定还发现，<code>__DATA</code> 段中还有一个 <code>__la_symbol_ptr</code>，而上面的截图中也存在 <code>Lazy Binding Info</code> 的字样。这是因为，并不是所有符号都是在启动时进行解析绑定的，出于性能考虑，一部分符号将会在首次调用时进行绑定。那么绑定的过程是如何的呢？</p>
+<p>为了方便调试，我们稍微修改一下代码，让 app 启动时直接进入 lazybind 流程。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//main.m</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> * argv[])</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;hi, pritf&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>重新编译后，用 <code>Hopper</code> 重新打开你的 <code>Mach-O</code>，记得<strong>不要</strong>勾选 Resolve Lazy Bindings。</p>
+<p>用寻找 <code>NSDictionary</code> 符号相似的方法，我们可以很快在 <code>Hopper</code> 中定位到如下位置：</p>
+<img src = '/images/SymbolResolution/la_symbol_ptr.png' width=620/>
+
+<p>若继续跟踪代码，我们会来到一个似乎看不出什么端倪的地方：<br><img src = '/images/SymbolResolution/printf_stub.png' width=550/></p>
+<p>这段代码实际属于 <code>__stub_helper</code>，不确定是否是我所使用的 <code>Hopper</code> 版本问题，同样的段落在 <code>MachOView</code> 中查看，可以看到正确的代码：</p>
+<img src = '/images/SymbolResolution/macho_printf_stub.png' width=650/>
+
+<p>这里，我们将 <code>0x100006c38</code> 地址处的内容，存入了 <code>w16</code>，回到 <code>Hopper</code>，可以看到该处的值为 <code>0x46</code> (具体值因 lazy pointer 数量而异)。随后我们将调用 <code>0x100006bf4</code> 处的函数：</p>
+<img src = '/images/SymbolResolution/stub_helper.png' width=550/>
+
+<p>此处逻辑是将 <code>0x100008008</code> <strong>指针</strong>传递给 <code>x17</code>，随后调用 <code>dyld_stub_binder</code> 方法。</p>
+<p>该方法是 dyld 内部的方法（<a target="_blank" rel="noopener" href="https://opensource.apple.com/tarballs/dyld/">源码在这</a>），作用就是将 <code>__la_symbol_ptr</code> 当前指向 <code>__stub_helpers</code> 段的指针绑定到真实的函数地址上。结合 dyld 源码以及 Xcode 的 <code>Always Show Assembly</code> 选项，我们得以了解这个绑定的大概流程：</p>
+<img src = '/images/SymbolResolution/loader_cache.png' width=650/>
+
+<p>我们传入的首参，也就是之前放置于 <code>x17</code> 处的指针，实际上是用于让 <code>dyld</code> 创建 <code>ImageLoader</code> 的内存区域，<code>ImageLoader</code> 负责处理可执行文件及其依赖关系的抽象类，在本例中，其具体实例为 <code>ImageLoaderMachOCompressed</code> 类，在它的头文件中，也注明了它的作用：</p>
+<blockquote>
+<p><strong>*ImageLoaderMachOCompressed is the concrete subclass of ImageLoader which loads mach-o files that use the compressed LINKEDIT format. *</strong></p>
+</blockquote>
+<p>在 <code>dyld</code> 创建了负责处理 <code>__LINKEDIT</code> 信息的实例后，程序最终会进入:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ImageLoaderMachOCompressed::doBindFastLazySymbol(<span class="keyword">uint32_t</span> lazyBindingInfoOffset, </span><br><span class="line"><span class="keyword">const</span> LinkContext&amp; context, </span><br><span class="line"><span class="keyword">void</span> (*lock)(), </span><br><span class="line"><span class="keyword">void</span> (*unlock)())</span><br></pre></td></tr></table></figure>
+<p>其中参数 <code>context</code> 为初始化时 <code>dyld</code> 为该实例设置的一系列上下文信息，<code>lock</code>，<code>unlock</code> block 则为特定环境中的加解锁方法。简单阅读该方法，可以发现它主要干这么几件事：</p>
+<p>首先，通过 <code>fLinkEditBase + fDyldInfo-&gt;lazy_bind_off</code> 确定 <code>__LINKEDIT</code> 段中存放 <code>Lazy Binding Info</code> 信息的基址，然后根据我们传入的偏移值（也就是最开始塞进 <code>w16</code> 中的 <code>0x46</code>），定位到具体位置。</p>
+<p>回头在 <code>MachOView</code> 上看看这块的信息：</p>
+<img src = '/images/SymbolResolution/lazy_binding_info.png' width=750/>
+
+<p><code>0x46</code> 正好就是基址 <code>F0</code> 到 <code>printf</code> 信息段 <code>36</code> 的偏移量。到了这一步，我们就可以拿到：</p>
+<ol>
+<li><code>__la_symbol_ptr</code> 段中，待改写的指针地址。 <img src = '/images/SymbolResolution/dirty_data.png' width=820/></li>
+<li>我们想要找到的目标符号以及其对应在哪个 <code>dylib</code> 之中。</li>
+</ol>
+<p>接着，调用 <code>bindAt</code> 方法，通过上一步中获取的符号名称，在目标库中获取函数地址（也就是 <code>printf</code> 在 <code>libSystem.B.dylib</code> 中的实际地址），然后调用 <code>bindLocation</code> 改写对应 <code>__la_symbol_ptr</code> 中的指向。</p>
+<p>实际运行起来，也证实了我们的想法：</p>
+<img src = '/images/SymbolResolution/bind_process.png' width=850/>
+
+<p>在 <code>resolve</code> 之前，我们已经拿到了 <code>_printf</code> 符号和待改写指针，在 <code>bindLocation</code> 之前，我们已经拿到了 <code>printf</code> 的真实地址了，而在 <code>bindLocation</code> 之后，我们的 <code>__la_symbol_ptr</code> 就指向实际函数地址，变得不再 lazy 了。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p><a target="_blank" rel="noopener" href="https://developer.apple.com/videos/play/wwdc2016/406/">Optimizing App Startup Time</a><br><a target="_blank" rel="noopener" href="https://developer.apple.com/videos/play/wwdc2017/413/">App Startup Time: Past, Present, and Future</a><br><a target="_blank" rel="noopener" href="https://developer.apple.com/videos/play/wwdc2018/415/">Behind the Scenes of the Xcode Build Process</a><br><a target="_blank" rel="noopener" href="https://www.raywenderlich.com/37181/ios-assembly-tutorial">iOS Assembly Tutorial: Understanding ARM</a><br><a target="_blank" rel="noopener" href="https://blog.cnbluebox.com/blog/2017/07/24/arm64-start/">iOS开发同学的arm64汇编入门</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/iOS/" rel="tag"># iOS</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2018/03/01/create-your-code-snippet/" rel="prev" title="从今天开始，不再做一个打字员">
+                  <i class="fa fa-chevron-left"></i> 从今天开始，不再做一个打字员
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/12/25/2018-Yearly/" rel="next" title="2018年度总结">
+                  2018年度总结 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      const activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      const commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Gocy</span>
+</div>
+  <div class="powered-by">تطبيق الموقع <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>

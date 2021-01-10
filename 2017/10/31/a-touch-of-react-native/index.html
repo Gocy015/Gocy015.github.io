@@ -1,38 +1,390 @@
-{% extends '_layout.swig' %}
-{% import '_macro/post.swig' as post_template %}
-{% import '_macro/sidebar.swig' as sidebar_template %}
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
 
 
-{% block title %} {{ page.title }} | {{ config.title }} {% endblock %}
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
 
-{% block page_class %}page-post-detail{% endblock %}
+<link rel="stylesheet" href="/css/main.css">
 
 
-{% block content %}
 
-  <div id="posts" class="posts-expand">
-    {{ post_template.render(page) }}
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.1/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
 
-    <div class="post-spread">
-      {% if theme.jiathis %}
-        {% include '_partials/share/jiathis.swig' %}
-      {% elseif theme.baidushare %}
-        {% include '_partials/share/baidushare.swig' %}
-      {% elseif theme.add_this_id %}
-        {% include '_partials/share/add-this.swig' %}
-      {% elseif theme.duoshuo_shortname and theme.duoshuo_share %}
-        {% include '_partials/share/duoshuo_share.swig' %}
-      {% endif %}
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"blog.gocy.tech","root":"/","images":"/images","scheme":"Muse","version":"8.2.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"بحث...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}};
+  </script>
+<meta name="description" content="前言转眼又年尾了，JS 都忘的差不多了 :( 。 本文是 iOS 程序员的 JavaScript 之旅 系列的第四篇，这个系列主要用于记录我在学习 JavaScript 中的一点心得，文中内容由于参考文献版本不一定是最新 &amp; 个人理解水平有限，可能出现一些错误，还请谅解。如果有任何讨论 &#x2F; 建议 &#x2F; 意见，欢迎评论留言或是邮件联系。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="React Native 初体验">
+<meta property="og:url" content="https://blog.gocy.tech/2017/10/31/a-touch-of-react-native/index.html">
+<meta property="og:site_name" content="Gocy&#39;s home page">
+<meta property="og:description" content="前言转眼又年尾了，JS 都忘的差不多了 :( 。 本文是 iOS 程序员的 JavaScript 之旅 系列的第四篇，这个系列主要用于记录我在学习 JavaScript 中的一点心得，文中内容由于参考文献版本不一定是最新 &amp; 个人理解水平有限，可能出现一些错误，还请谅解。如果有任何讨论 &#x2F; 建议 &#x2F; 意见，欢迎评论留言或是邮件联系。">
+<meta property="og:locale">
+<meta property="og:image" content="https://blog.gocy.tech/images/ATouchOfRN/PersonalCenterRN.gif">
+<meta property="article:published_time" content="2017-10-31T08:45:52.000Z">
+<meta property="article:modified_time" content="2017-11-01T08:30:40.000Z">
+<meta property="article:author" content="Gocy">
+<meta property="article:tag" content="iOS 程序员的 JavaScript 之旅">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://blog.gocy.tech/images/ATouchOfRN/PersonalCenterRN.gif">
+
+
+<link rel="canonical" href="https://blog.gocy.tech/2017/10/31/a-touch-of-react-native/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh'
+  };
+</script>
+<title>React Native 初体验 | Gocy's home page</title>
+  
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="تشغيل شريط التصفح" role="button">
     </div>
   </div>
 
-{% endblock %}
+  <div class="site-meta">
 
-{% block sidebar %}
-  {{ sidebar_template.render(true) }}
-{% endblock %}
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">Gocy's home page</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">把热爱的事情做好</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
 
 
-{% block script_extra %}
-  {% include '_scripts/pages/post-details.swig' %}
-{% endblock %}
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          المحتويات
+        </li>
+        <li class="sidebar-nav-overview">
+          عام
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BC%9A%E6%83%B3%E5%88%B0-RN"><span class="nav-number">2.</span> <span class="nav-text">为什么会想到 RN ?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9D%E4%BD%93%E9%AA%8C%EF%BC%9F%E6%83%B3%E5%A4%9A%E4%BA%86"><span class="nav-number">3.</span> <span class="nav-text">初体验？想多了</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%88%91%E5%81%9A%E4%BA%86%E4%BB%80%E4%B9%88%E5%91%A2"><span class="nav-number">3.1.</span> <span class="nav-text">我做了什么呢</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%81%87%E5%88%B0%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-number">4.</span> <span class="nav-text">遇到的问题</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9E%84%E5%BB%BA%E8%A7%86%E5%9B%BE%E5%A4%A7%E4%B8%8D%E5%90%8C"><span class="nav-number">4.1.</span> <span class="nav-text">构建视图大不同</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Component-animate"><span class="nav-number">4.2.</span> <span class="nav-text">Component.animate()?</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%8D%E5%86%8D%E8%A2%AB%E9%9C%80%E8%A6%81%E7%9A%84%E8%A7%86%E5%9B%BE%E5%8F%98%E9%87%8F"><span class="nav-number">4.3.</span> <span class="nav-text">不再被需要的视图变量</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93%E6%84%9F%E6%83%B3"><span class="nav-number">5.</span> <span class="nav-text">总结感想</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Gocy</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives">
+          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-name">المقالات</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">الوسوم</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh">
+    <link itemprop="mainEntityOfPage" href="https://blog.gocy.tech/2017/10/31/a-touch-of-react-native/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Gocy">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Gocy's home page">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          React Native 初体验
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">نُشر في</span>
+
+      <time title="أُنشأ: 2017-10-31 16:45:52" itemprop="dateCreated datePublished" datetime="2017-10-31T16:45:52+08:00">2017-10-31</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">عُدل في</span>
+        <time title="عُدل: 2017-11-01 16:30:40" itemprop="dateModified" datetime="2017-11-01T16:30:40+08:00">2017-11-01</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>转眼又年尾了，JS 都忘的差不多了 :( 。</p>
+<p>本文是 <strong><a href="/tags/iOS-%E7%A8%8B%E5%BA%8F%E5%91%98%E7%9A%84-JavaScript-%E4%B9%8B%E6%97%85/">iOS 程序员的 JavaScript 之旅</a></strong> 系列的第四篇，这个系列主要用于记录我在学习 JavaScript 中的一点心得，文中内容由于参考文献版本不一定是最新 &amp; 个人理解水平有限，可能出现一些错误，还请谅解。如果有任何讨论 / 建议 / 意见，欢迎评论留言或是邮件联系。</p>
+<a id="more"></a>
+
+<h3 id="为什么会想到-RN"><a href="#为什么会想到-RN" class="headerlink" title="为什么会想到 RN ?"></a>为什么会想到 RN ?</h3><p>提到 JavaScript，你或许会想前端 JS、后端 JS，再抛出 iOS 几个字，你或许会想到 JavaScriptCore，如果再说到热更新，JSPatch 又会从脑海里出来（ :) R.I.P），如果我再补充一条跨平台，那么 React Native 便会脱口而出。React Native 已经火了有一段时间了，它不是第一个想要一统全平台的解决方案，虽然本文执笔时，RN 的正式版本还只是 0.49，距离正式版还有好些距离，但不得不说，它的完善度和使用量都在日渐提高，国内也有不少大公司的应用中已经集成了 RN，我想，尽管在后续的版本更新中，RN 的一些语法和组件实现都还会有变动，但 RN 已经是一套较为成熟和可用的解决方案了，另外，Debug 阶段不用反复的 build，发布时也不受苹果审核的控制，这项不算新颖但又正在崛起的一门技术，为什么不学习一下呢？</p>
+<h3 id="初体验？想多了"><a href="#初体验？想多了" class="headerlink" title="初体验？想多了"></a>初体验？想多了</h3><p>本文并不是 RN 的手把手起步教学，也不会介绍 RN 的前世今生和发展历程，事实上我也还在学习之中。如果你是一个 RN 小白，那么我推荐你阅读这篇 <a target="_blank" rel="noopener" href="https://www.raywenderlich.com/165140/react-native-tutorial-building-ios-android-apps-javascript">RayWenderlich 的入门教学</a> 了解 RN 的基础用法、环境配置等等，然后，可以看看油管上的 <a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=TdkzJkrHCgQ&t=1295s">React Native Practical Flex Layout</a>，看看如何站在 RN 的角度，去分析、实现一个真实的业务场景。本文就是在看完该视频之后写下的，主要用于记录一些心得和感受。</p>
+<h4 id="我做了什么呢"><a href="#我做了什么呢" class="headerlink" title="我做了什么呢"></a>我做了什么呢</h4><p>当我跟完 RW 上的教程之后，我是非常迷茫的，文章我看懂了，Demo Project 也跟着做了，可是我总觉得我没法动手去实现一个真实的业务场景，怎么办？拿起你的手机，打开你心爱的 App，挑一个内容相对丰富的界面，撸起袖子干！</p>
+<p>我相中的是 <a target="_blank" rel="noopener" href="https://www.yy.com/download">手机YY</a> 的个人中心页面：<br><img src = "/images/ATouchOfRN/YYMobilePersonalCenter.png" width=320></img></p>
+<p>有导航栏、有 CollectionView、有小红点、有动画（日常任务那里是个轮播控件），看起来是个五脏俱全界面了。根据实际的界面效果，运用上面油管视频中的布局策略，我们可以大概搭一个界面框架：</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 整个 “Collection View”</span></span><br><span class="line"><span class="function"><span class="title">render</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">     <span class="comment">// 计算初始化 item 数量，得出 initialSize</span></span><br><span class="line">    <span class="keyword">return</span> (</span><br><span class="line">        &lt;ListView contentContainerStyle=&#123;styles.list&#125;</span><br><span class="line">            initialListSize=&#123;initialSize&#125;</span><br><span class="line">            dataSource=&#123;<span class="built_in">this</span>.state.dataSource&#125;</span><br><span class="line">            renderRow=&#123;<span class="built_in">this</span>._renderItem.bind(<span class="built_in">this</span>)&#125;</span><br><span class="line">            /&gt;</span><br><span class="line">    );</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 每个 “cell” 的视图</span></span><br><span class="line"><span class="function"><span class="title">_renderItem</span>(<span class="params">itemData, sectionID, itemID</span>)</span> &#123;</span><br><span class="line">    <span class="keyword">var</span> itemNum = <span class="built_in">parseInt</span>(itemID);</span><br><span class="line">    <span class="keyword">if</span> (itemNum == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> (</span><br><span class="line">            &lt;View style=&#123;styles.userCell&#125;&gt;</span><br><span class="line">                &lt;UserInfoCell /&gt;</span><br><span class="line">            &lt;/View&gt;</span><br><span class="line">        );</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (itemNum == <span class="number">1</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> (</span><br><span class="line">            &lt;View style=&#123;styles.dailyMissionCell&#125;&gt;</span><br><span class="line">                &lt;DailyMissionCell /&gt;</span><br><span class="line">            &lt;/View&gt;</span><br><span class="line">        );</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> (</span><br><span class="line">        &lt;TouchableHighlight onPress=&#123;<span class="function">() =&gt;</span> self._pressItem(itemID)&#125; underlayColor=<span class="string">&#x27;rgba(0,0,0,0)&#x27;</span> &gt;</span><br><span class="line">            &lt;View style=&#123;styles.infoCell&#125;&gt;</span><br><span class="line">                &lt;InfoCell /&gt;</span><br><span class="line">            &lt;/View&gt;</span><br><span class="line">        &lt;/TouchableHighlight &gt;</span><br><span class="line">    );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><em>（貌似 Hexo 的高亮插件对 RN 的支持不太好）</em></p>
+<p>界面的具体实现同样不在本文的讨论范围之内，如有需要，可以直接下载 <a target="_blank" rel="noopener" href="https://github.com/Gocy015/PersonalCenter-RN">Github 源码</a>，最终，实现如下效果（没做 Tabbar）：</p>
+<p><img src="/images/ATouchOfRN/PersonalCenterRN.gif"></p>
+<center>_(色差好大)_</center>
+
+<h3 id="遇到的问题"><a href="#遇到的问题" class="headerlink" title="遇到的问题"></a>遇到的问题</h3><p>本文着重记录和讨论我在实现该工程时遇到的一些问题以及我自己的思考。</p>
+<h4 id="构建视图大不同"><a href="#构建视图大不同" class="headerlink" title="构建视图大不同"></a>构建视图大不同</h4><p>在以往使用 Native 构建视图界面的时候，我们通常是在 <code>viewDidLoad</code> 或是 <code>awakeFromNib</code> 中（也就是运行时），利用一系列的 <code>addSubview</code> 和 <code>insertSubview</code> 来建立视图之间的关系，而整个的布局系统，更侧重的也是<strong>视图之间的关系建立</strong>，尤其是同级视图之间的关系，我们通常会用 Autolayout 指定他们的对齐、大小、位置等等布局关系。</p>
+<p>但 RN 中引入的概念，是一个名为 <a target="_blank" rel="noopener" href="https://facebook.github.io/react-native/docs/tutorial.html">JSX</a> 的东西，它写起来像极了 HTML，通过标签来声明视图并建立视图关系，它的布局系统，是一套名为 <a target="_blank" rel="noopener" href="https://facebook.github.io/react-native/docs/flexbox.html">Flexbox</a> 的体系。视图的父子关系通过&lt;标签&gt;&lt;/标签&gt;作用域来决定，而同级视图之间的关系，通常是由其容器（父视图）的布局参数来决定的。其中最最常用，通用性也最好的自然是流式布局（Flex Layout），使用了该种布局方式的容器内的所有视图，都会以横或是纵的方向流式铺开，这也直接导致了一个问题，就是当视图布局不是简单的流式布局时，我们需要加入多层容器，来实现目标布局。</p>
+<p><img src = "/images/ATouchOfRN/UserContainers.png" width=520></img></p>
+<center>*图中的红框是纵向布局容器，蓝框是横向布局容器*</center>
+
+<p>另外，一些视图并不会始终保持初始化时的状态，而是后续随着用户操作而显示/消失/改变样式，在 Native 开发中，我们通常以 <code>addSubview</code>,<code>removeFromSuperview</code> 或是 <code>view.someProperty = someValue</code> 的方式来达到目的，但在 RN 中则是一套完全不同的思想，首先我们没有 add 或 remove 这样的概念，视图的构建是使用 JSX 描述性的实现的，但 JSX 语法中支持执行逻辑，依然为动态加载视图提供了可能：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">render ()&#123;</span><br><span class="line">    <span class="keyword">var</span> dynamicView = getViewWhenNeeded();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> (</span><br><span class="line">        &lt;View&gt;</span><br><span class="line">            &#123;dynamicView&#125;   <span class="comment">//当然也可以直接写成 &#123;getViewWhenNeeded()&#125;</span></span><br><span class="line">        &lt;/View&gt;</span><br><span class="line">    );</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="title">getViewWhenNeeded</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (!<span class="built_in">this</span>.state.needed)&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> (</span><br><span class="line">        &lt;View style=&#123;styles.yourStyle&#125;&gt;</span><br><span class="line">        &lt;/View&gt;</span><br><span class="line">    );</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="title">switchViewState</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">    <span class="built_in">this</span>.setState(&#123;</span><br><span class="line">        needed : !<span class="built_in">this</span>.state.needed</span><br><span class="line">    &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>render()</code> 是 RN 中的 Component 视图刷新的入口，也是我们构建该视图和其子视图的地方，当我们需要改变视图状态时，需要调用 <code>component.setState()</code> ，来更新该视图的状态，然后在 <code>render()</code> 方法中，根据不同的状态值，来显示不同的视图。<br>从 <code>render()</code> 的返回值我们可以看出，我们是返回了一个完整的视图树，这就意味着，当一个视图状态更新时，其所有的子视图也都重新被构造了一次，直观上就感觉这样的做法效率偏低，似乎有“牵一发而动全身”的感觉，所以将视图拆分开来，做成单独的 Component 子类，或许会是一个好的习惯，而且经过我不严谨的实验，似乎将子视图缓存起来，RN 是不会重新创建视图的（这里后续还要更严谨的验证，目前只是猜想）：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="title">render</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (!<span class="built_in">this</span>.cachedView)&#123;</span><br><span class="line">        <span class="built_in">this</span>.cachedView = (</span><br><span class="line">            &lt;View style=&#123;styles.yourStyle&#125;&gt;</span><br><span class="line">            &lt;/View&gt;</span><br><span class="line">        );</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> (</span><br><span class="line">        &lt;View&gt;</span><br><span class="line">            &#123;<span class="built_in">this</span>.cachedView&#125;</span><br><span class="line">        &lt;/View&gt;</span><br><span class="line">    );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="Component-animate"><a href="#Component-animate" class="headerlink" title="Component.animate()?"></a>Component.animate()?</h4><p>在 Native 开发中，我们通常会使用 <code>UIView.animate()</code> 方法，或是 <code>UIViewPropertyAnimator</code> 创建实例进行视图动画，事实上，利用这些系统方法（以及 <code>Core Graphics</code> 层的动画方法）并配合上一些简单的参数，我们可以做出许多 <a target="_blank" rel="noopener" href="https://github.com/Gocy015/MotionExperiment">酷炫的界面动画</a>。而 RN 中，情况则略有不同，从上面更新视图的逻辑我们可以看到，RN 的视图更像是由一个状态机来维护的，当状态变化时（<code>setState()</code>），底层调用 <code>render()</code>，从而视图根据状态量重新绘制。动画机制也是类似，可动画视图在创建时，就需要绑定对应的状态量：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="title">_createViewsIfNeeded</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (!<span class="built_in">this</span>.animationView) &#123;</span><br><span class="line">    <span class="built_in">this</span>.animatedViewAngle = <span class="keyword">new</span> Animated.Value(<span class="number">0</span>);</span><br><span class="line">    <span class="keyword">const</span> angle = <span class="built_in">this</span>.animatedViewAngle.interpolate(&#123;</span><br><span class="line">      inputRange: [<span class="number">0</span>, <span class="number">1</span>],</span><br><span class="line">      outputRange: [<span class="string">&#x27;0deg&#x27;</span>, <span class="string">&#x27;360deg&#x27;</span>]</span><br><span class="line">    &#125;)</span><br><span class="line">    <span class="keyword">var</span> transformedRotation = &#123; <span class="attr">transform</span>: [&#123; <span class="attr">rotate</span>: angle &#125;] &#125;;</span><br><span class="line">    <span class="built_in">this</span>.animationView = (</span><br><span class="line">      &lt;Animated.View style=&#123;[styles.animationView, transformedRotation]&#125;&gt;</span><br><span class="line">      &lt;/Animated.View&gt;</span><br><span class="line">    );</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>动画的执行，实际上是对改状态量的操作：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="title">_startAnimations</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">  <span class="built_in">this</span>._createViewsIfNeeded();</span><br><span class="line">  <span class="keyword">if</span> (<span class="built_in">this</span>.timerId) &#123;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">var</span> self = <span class="built_in">this</span>;</span><br><span class="line">  <span class="built_in">this</span>.timerId = <span class="built_in">setInterval</span>(</span><br><span class="line">    () =&gt; &#123;</span><br><span class="line">      self.animatedViewAngle.setValue(<span class="number">0</span>);</span><br><span class="line">      Animated.timing(</span><br><span class="line">        self.animatedViewAngle,</span><br><span class="line">        &#123;</span><br><span class="line">          toValue: <span class="number">1</span>,</span><br><span class="line">          duration: <span class="number">2</span> * <span class="number">1000</span></span><br><span class="line">        &#125;</span><br><span class="line">      ).start();</span><br><span class="line">      self._startAnimations();</span><br><span class="line">    &#125;, <span class="number">3</span> * <span class="number">1000</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>虽然看起来并不复杂，而且 <code>interpolate()</code> 方法也可以很好的把实际的动画参数范围抽象成 0 ~ 100%，但在动画较复杂，状态量较多的时候，感觉这样的方式还是不如 <code>UIView.animate()</code> 的 block 形式来的直观简单。</p>
+<h4 id="不再被需要的视图变量"><a href="#不再被需要的视图变量" class="headerlink" title="不再被需要的视图变量"></a>不再被需要的视图变量</h4><p>正如前文所说的，RN 的视图依靠状态量驱动，而如果你在网上搜索示例代码，也会看到许多 <code>render()</code> 方法都直接返回一个完整的 <code>&lt;View&gt;&lt;/View&gt;</code> 结构。因此，如果不考虑前文所提到的可能存在的效率问题，如下的存储视图的逻辑在大部分场景下都不需要了：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">this</span>.cachedView = <span class="xml"><span class="tag">&lt;<span class="name">View</span>&gt;</span><span class="tag">&lt;/<span class="name">View</span>&gt;</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="title">render</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">    <span class="comment">//use this.cachedView</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>而且，似乎 RN 的视图并不支持创建后的修改，不知道是我没找到正确的姿势还是 RN 设计就是希望你只在 <code>render()</code> 之中修改视图状态，考虑 Swift 中的如下代码：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">somethingHappened</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="keyword">self</span>.textLabel.text <span class="operator">=</span> <span class="string">&quot;Hey ,something has gone wrong&quot;</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>而在 RN 中，我们可能无法直接修改视图的参数：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="title">somethingHappened</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">    <span class="comment">// this.cachedTextLabel.text = &quot;Hey ,something has gone wrong&quot;; 并没有这种写法</span></span><br><span class="line">    <span class="built_in">this</span>.setState(&#123;</span><br><span class="line">        tips:<span class="string">&quot;Hey ,something has gone wrong&quot;</span></span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="title">render</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">    <span class="keyword">return</span> (</span><br><span class="line">        &lt;Text&gt;</span><br><span class="line">            &#123;<span class="built_in">this</span>.state.tips&#125;</span><br><span class="line">        &lt;/Text&gt;</span><br><span class="line">    );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="总结感想"><a href="#总结感想" class="headerlink" title="总结感想"></a>总结感想</h3><p>在之前的文章中，我曾经写到过：“JavaScript 并不是一门面向对象的语言，不要尝试用面向对象的思想去解读它的特性”，虽然如今为了迎合 OOP 的大潮，ES6 已经推出了一系列 OOP 概念中才存在的关键字，但我认为相同的道理也适用于 RN 和纯 Native，RN 不能算是 Native 的延伸，而是一套新的机制，我们不能用传统构建 iOS 应用的思维去理解、使用它，在实现这个 RN 个人主页的过程中，我感到的最大的不适应就是其各项机制与 Native 的不同，我不再能直接对目标视图进行操作修改，而需要通过 <code>setState()</code> 手动将某些视图设置为 <code>dirty</code>，触发刷新；动画不再是在特定的 block 中修改视图属性，而是预先定义好绑定关系，对状态量进行改变。我想，后续的开发学习中，应该还存在着不少不适应的地方，试着去理解 RN 的设计思维，系统机制，思考为什么它和 Native 存在种种差异，我想这样的对比总结出来的结论，也将对后续各种项目的开发起到非常好的帮助作用。</p>
+<p>本文的内容及代码都是我在学习、实践中总结出来的，包括实现的 Demo 工程，必然存在不足的地方，仅供参考。如果有任何的意见/建议，欢迎邮件联系。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/iOS-%E7%A8%8B%E5%BA%8F%E5%91%98%E7%9A%84-JavaScript-%E4%B9%8B%E6%97%85/" rel="tag"># iOS 程序员的 JavaScript 之旅</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2017/09/16/DetectingUselessCodeWithClang-p3/" rel="prev" title="如何使用 Clang Plugin 找到项目中的无用代码（Part 3）">
+                  <i class="fa fa-chevron-left"></i> 如何使用 Clang Plugin 找到项目中的无用代码（Part 3）
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2017/12/28/2017-Yearly/" rel="next" title="2017年度总结">
+                  2017年度总结 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      const activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      const commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Gocy</span>
+</div>
+  <div class="powered-by">تطبيق الموقع <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>

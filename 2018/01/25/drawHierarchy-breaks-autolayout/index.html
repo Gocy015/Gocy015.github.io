@@ -1,38 +1,400 @@
-{% extends '_layout.swig' %}
-{% import '_macro/post.swig' as post_template %}
-{% import '_macro/sidebar.swig' as sidebar_template %}
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
 
 
-{% block title %} {{ page.title }} | {{ config.title }} {% endblock %}
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
 
-{% block page_class %}page-post-detail{% endblock %}
+<link rel="stylesheet" href="/css/main.css">
 
 
-{% block content %}
 
-  <div id="posts" class="posts-expand">
-    {{ post_template.render(page) }}
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.1/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
 
-    <div class="post-spread">
-      {% if theme.jiathis %}
-        {% include '_partials/share/jiathis.swig' %}
-      {% elseif theme.baidushare %}
-        {% include '_partials/share/baidushare.swig' %}
-      {% elseif theme.add_this_id %}
-        {% include '_partials/share/add-this.swig' %}
-      {% elseif theme.duoshuo_shortname and theme.duoshuo_share %}
-        {% include '_partials/share/duoshuo_share.swig' %}
-      {% endif %}
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"blog.gocy.tech","root":"/","images":"/images","scheme":"Muse","version":"8.2.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"بحث...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}};
+  </script>
+<meta name="description" content="前言在 iOS 上，对某个 view 进行“图片化”操作似乎已经是家常便饭了。而不论是 [CALayer renderInContext:] 还是 [UIView drawViewHierarchyInRect:afterScreenUpdates:] 都有各自的 bug 和局限性。本文将根据实际开发中遇到的问题，着重探讨 [UIView drawViewHierarchyInRect:after">
+<meta property="og:type" content="article">
+<meta property="og:title" content="屏幕截取与自动布局二三事">
+<meta property="og:url" content="https://blog.gocy.tech/2018/01/25/drawHierarchy-breaks-autolayout/index.html">
+<meta property="og:site_name" content="Gocy&#39;s home page">
+<meta property="og:description" content="前言在 iOS 上，对某个 view 进行“图片化”操作似乎已经是家常便饭了。而不论是 [CALayer renderInContext:] 还是 [UIView drawViewHierarchyInRect:afterScreenUpdates:] 都有各自的 bug 和局限性。本文将根据实际开发中遇到的问题，着重探讨 [UIView drawViewHierarchyInRect:after">
+<meta property="og:locale">
+<meta property="og:image" content="https://blog.gocy.tech/images/drawHierarchyBreaksAutolayout/insertsubviewstack.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/drawHierarchyBreaksAutolayout/generatedconstraints.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/drawHierarchyBreaksAutolayout/noconstraints.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/drawHierarchyBreaksAutolayout/iberror.png">
+<meta property="article:published_time" content="2018-01-25T02:10:37.000Z">
+<meta property="article:modified_time" content="2018-01-25T11:58:58.000Z">
+<meta property="article:author" content="Gocy">
+<meta property="article:tag" content="iOS">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://blog.gocy.tech/images/drawHierarchyBreaksAutolayout/insertsubviewstack.png">
+
+
+<link rel="canonical" href="https://blog.gocy.tech/2018/01/25/drawHierarchy-breaks-autolayout/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh'
+  };
+</script>
+<title>屏幕截取与自动布局二三事 | Gocy's home page</title>
+  
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="تشغيل شريط التصفح" role="button">
     </div>
   </div>
 
-{% endblock %}
+  <div class="site-meta">
 
-{% block sidebar %}
-  {{ sidebar_template.render(true) }}
-{% endblock %}
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">Gocy's home page</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">把热爱的事情做好</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
 
 
-{% block script_extra %}
-  {% include '_scripts/pages/post-details.swig' %}
-{% endblock %}
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          المحتويات
+        </li>
+        <li class="sidebar-nav-overview">
+          عام
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#drawViewHierarchyInRect-%E7%9A%84%E6%84%8F%E4%B9%89"><span class="nav-number">2.</span> <span class="nav-text">drawViewHierarchyInRect: 的意义</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E8%B7%B5%E8%A7%81%E7%9C%9F%E7%9F%A5"><span class="nav-number">2.1.</span> <span class="nav-text">实践见真知</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A2%AB%E7%A7%BB%E5%8A%A8%E7%9A%84-view"><span class="nav-number">3.</span> <span class="nav-text">被移动的 view</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#view-%E7%9A%84%E5%B1%82%E7%BA%A7"><span class="nav-number">3.1.</span> <span class="nav-text">view 的层级</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#view-%E7%9A%84-layout"><span class="nav-number">3.2.</span> <span class="nav-text">view 的 layout</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Everything%E2%80%99s-fine-until-it%E2%80%99s-not"><span class="nav-number">3.3.</span> <span class="nav-text">Everything’s fine until it’s not</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%90%86%E6%B8%85%E5%A4%B4%E7%BB%AA"><span class="nav-number">3.4.</span> <span class="nav-text">理清头绪</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BB%B6%E4%BC%B8%E9%98%85%E8%AF%BB"><span class="nav-number">4.</span> <span class="nav-text">延伸阅读</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Gocy</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives">
+          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-name">المقالات</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">الوسوم</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh">
+    <link itemprop="mainEntityOfPage" href="https://blog.gocy.tech/2018/01/25/drawHierarchy-breaks-autolayout/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Gocy">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Gocy's home page">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          屏幕截取与自动布局二三事
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">نُشر في</span>
+      
+
+      <time title="أُنشأ: 2018-01-25 10:10:37 / عُدل: 19:58:58" itemprop="dateCreated datePublished" datetime="2018-01-25T10:10:37+08:00">2018-01-25</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>在 iOS 上，对某个 view 进行“图片化”操作似乎已经是家常便饭了。而不论是 <code>[CALayer renderInContext:]</code> 还是 <code>[UIView drawViewHierarchyInRect:afterScreenUpdates:]</code> 都有各自的 bug 和局限性。本文将根据实际开发中遇到的问题，着重探讨 <code>[UIView drawViewHierarchyInRect:afterScreenUpdates:]</code> 方法。</p>
+<a id="more"></a>
+
+<h2 id="drawViewHierarchyInRect-的意义"><a href="#drawViewHierarchyInRect-的意义" class="headerlink" title="drawViewHierarchyInRect: 的意义"></a><code>drawViewHierarchyInRect:</code> 的意义</h2><p>在 <code>[UIView drawViewHierarchyInRect:afterScreenUpdates:]</code> 的 <a target="_blank" rel="noopener" href="https://developer.apple.com/documentation/uikit/uiview/1622589-drawviewhierarchyinrect">官方文档</a> 中，我们可以看到这个方法的作用及参数的含义：</p>
+<blockquote>
+<p><strong>drawViewHierarchyInRect:afterScreenUpdates:</strong><br>Renders a snapshot of the complete view hierarchy as visible onscreen into the current context.</p>
+</blockquote>
+<blockquote>
+<p><strong>afterUpdates</strong><br>A Boolean value that indicates whether the snapshot should be rendered after recent changes have been incorporated. Specify the value NO if you want to render a snapshot in the view hierarchy’s current state, which might not include recent changes.</p>
+</blockquote>
+<p>描述里有这么一句话非常有意思：“Renders a snapshot of the complete view hierarchy <span style='color:red'><strong>as visible onscreen</strong></span> into the current context.”<br>也就是说，该函数是重绘一次 <strong>当前屏幕上的视图</strong>，而参数 <code>afterScreenUpdates:</code> 则是用来决定是否等待 view 再重新渲染一次。</p>
+<p>那么如果当前视图不在屏幕上呢？</p>
+<h3 id="实践见真知"><a href="#实践见真知" class="headerlink" title="实践见真知"></a>实践见真知</h3><p>我写了一个 <code>TestView</code> 类，主要是覆盖了一些函数，打印一些 log，以及实现 <code>snapshot</code> 方法:</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//TestView.m</span></span><br><span class="line">- (<span class="built_in">UIImage</span> *)snapshotAfterScreenUpdates:(<span class="built_in">BOOL</span>)afterScreenUpdates&#123;</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@&quot;snapshot with size : %@&quot;</span>,<span class="built_in">NSStringFromCGSize</span>(<span class="keyword">self</span>.bounds.size));</span><br><span class="line">    <span class="built_in">UIGraphicsBeginImageContext</span>(<span class="keyword">self</span>.bounds.size);</span><br><span class="line">    [<span class="keyword">self</span> drawViewHierarchyInRect:<span class="keyword">self</span>.bounds afterScreenUpdates:afterScreenUpdates];</span><br><span class="line">    <span class="built_in">UIImage</span> *img = <span class="built_in">UIGraphicsGetImageFromCurrentImageContext</span>();</span><br><span class="line">    <span class="built_in">UIGraphicsEndImageContext</span>();</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@&quot;snapshot complete&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span> img;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)drawRect:(<span class="built_in">CGRect</span>)rect&#123;</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@&quot;%@ drawing rect.&quot;</span>,<span class="keyword">self</span>);</span><br><span class="line">    <span class="built_in">CGContextSetFillColorWithColor</span>(<span class="built_in">UIGraphicsGetCurrentContext</span>(), <span class="keyword">self</span>.backgroundColor.CGColor);</span><br><span class="line">    <span class="built_in">CGContextFillRect</span>(<span class="built_in">UIGraphicsGetCurrentContext</span>(), rect);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//ViewController.m</span></span><br><span class="line">- (<span class="keyword">void</span>)viewDidLoad &#123;</span><br><span class="line">    [<span class="keyword">super</span> viewDidLoad];</span><br><span class="line"></span><br><span class="line">    TestView *container = [TestView testViewWithName:<span class="string">@&quot;Container&quot;</span>];</span><br><span class="line">    container.backgroundColor = [<span class="built_in">UIColor</span> redColor];</span><br><span class="line">    [<span class="keyword">self</span>.view addSubview:container];</span><br><span class="line">    [container snapshotAfterScreenUpdates:<span class="literal">NO</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>运行程序，我们可以看到控制台输出了错误信息：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Container move to super : &lt;UIView: 0x7ffd83405430&gt;</span><br><span class="line">snapshot with size : &#123;100, 100&#125;</span><br><span class="line">[Snapshotting] Drawing a view (0x7fe464f02850, TestView) that has not been rendered at least once requires afterScreenUpdates:YES.</span><br><span class="line">snapshot complete</span><br></pre></td></tr></table></figure>
+<p>也就是说当待截取的 view 从未被绘制过的时候，<code>drawViewHierarchy</code> 方法是不能正常工作的（此时拿到的 img 也是一张空图），而系统建议我将 <code>afterScreenUpdates</code> 设置成 YES。</p>
+<blockquote>
+<p>需要注意，尽管我们在调用 snapshot 方法之前已经进行了 <code>addSubview:</code> 的操作，但这只是更改了视图树，而屏幕尚未重绘，故截屏方法依然无法工作。</p>
+</blockquote>
+<p>接下来我们将 <code>afterScreenUpdates</code> 改为 YES，再次运行程序：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Container move to super : &lt;UIView: 0x7f97b7e09b40&gt;</span><br><span class="line">snapshot with size : &#123;100, 100&#125;</span><br><span class="line">Container move to super : &lt;_UISnapshotWindow: 0x7f97b7d03860&gt;</span><br><span class="line">Container drawing rect.</span><br><span class="line">Container move to super : (null)</span><br><span class="line">Container move to super : &lt;UIView: 0x7f97b7e09b40&gt;</span><br><span class="line">snapshot complete</span><br></pre></td></tr></table></figure>
+<p>这次，snapshot 方法成功地获取到了视图，控制台也输出了一些有趣的东西。当我们在调用 <code>drawViewHierarchyInRect:</code> 的时候，我们希望他能在view 下一次渲染之后进行截取，但我们的视图并不在当前屏幕之上。<code>UIKit</code> 当然不可能粗暴的直接把 view 加到 <code>keywindow</code> 上，然后触发 <code>keywindow</code> 的重绘，但它采取的策略却基本是这个原理，它将目标 view 移动到一个 <code>_UISnapshotWindow</code> 上，然后进行绘制操作，之后再将 view 移动回原先的 superview 之中。作为对比，若是 view 已经在屏幕渲染之后再调用 <code>drawViewHierarchyInRect:</code>，则不会被移动到 <code>_UISnapshotWindow</code> 上。</p>
+<h2 id="被移动的-view"><a href="#被移动的-view" class="headerlink" title="被移动的 view"></a>被移动的 view</h2><p>知道我们的 view 可能被系统偷偷修改过层级之后，我们的疑问就来了，原 view 树上的各种信息是否会因此丢失呢？</p>
+<h3 id="view-的层级"><a href="#view-的层级" class="headerlink" title="view 的层级"></a>view 的层级</h3><p>考虑如下代码：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">TestView *frontView = [TestView testViewWithName:<span class="string">@&quot;front&quot;</span>];</span><br><span class="line">TestView *container = [TestView testViewWithName:<span class="string">@&quot;Container&quot;</span>];</span><br><span class="line">TestView *backView = [TestView testViewWithName:<span class="string">@&quot;back&quot;</span>];</span><br><span class="line">[<span class="keyword">self</span>.view addSubview:frontView];</span><br><span class="line">[<span class="keyword">self</span>.view addSubview:container];</span><br><span class="line">[<span class="keyword">self</span>.view addSubview:backView];</span><br><span class="line"><span class="built_in">NSLog</span>(<span class="string">@&quot;Before snapshot : %@&quot;</span>,<span class="keyword">self</span>.view.subviews);</span><br><span class="line">[container snapshotAfterScreenUpdates:<span class="literal">YES</span>];</span><br><span class="line"><span class="built_in">NSLog</span>(<span class="string">@&quot;After snapshot : %@&quot;</span>,<span class="keyword">self</span>.view.subviews);</span><br></pre></td></tr></table></figure>
+<p>运行程序之后，我们会发现，Container 在截图完成之后依然在 subviews 的中间。事实上，如果你打上 <code>[UIView insertSubview:atIndex:]</code> 的符号断点，你会看到系统在调完渲染方法之后，使用了 <code>insert</code> 方法来把我们的 view 放回正确位置。</p>
+<p><img src='/images/drawHierarchyBreaksAutolayout/insertsubviewstack.png' width = '750'></img></p>
+<p>也就是说，系统是会保留 view 相关的信息的，在私有 window 上绘制完之后，再根据这些信息恢复视图。</p>
+<h3 id="view-的-layout"><a href="#view-的-layout" class="headerlink" title="view 的 layout"></a>view 的 layout</h3><p>除了视图层级之外，我们自然还关心视图的布局了，除了直接在 IB 里面拖约束，我们还可以选择手写约束。而苹果自家那套 VFL 的可读性实在是低下，因此日常开发中我更偏向于使用 <a target="_blank" rel="noopener" href="https://github.com/SnapKit/Masonry">Masonry</a> 来进行视图布局（当然，这并不影响验证本文的问题，只是为了可读性和便捷性）。</p>
+<p>让我们为 Container 添加一些约束（如果你没有使用 Masonry 的经验也没关系，我想下面的代码一样非常易懂），为了打印出全量的信息，我们需要改写一下 <code>loadView</code> 方法：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ViewController.m</span></span><br><span class="line">- (<span class="keyword">void</span>)loadView&#123;</span><br><span class="line">    <span class="keyword">self</span>.view = [TestView testViewWithName:<span class="string">@&quot;Root&quot;</span>];</span><br><span class="line">&#125;</span><br><span class="line">- (<span class="keyword">void</span>)viewDidLoad&#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    [<span class="keyword">self</span>.view addSubview:container];</span><br><span class="line">    [container mas_makeConstraints:^(MASConstraintMaker *make) &#123;</span><br><span class="line">        make.center.equalTo(<span class="keyword">self</span>.view);</span><br><span class="line">        make.size.mas_equalTo(<span class="built_in">CGSizeMake</span>(<span class="number">100</span>, <span class="number">100</span>));</span><br><span class="line">    &#125;];</span><br><span class="line">    [container snapshotAfterScreenUpdates:<span class="literal">YES</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>运行程序，得到一系列输出：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">Root Add Constraint : &lt;MASLayoutConstraint:0x6080000b6920 TestView:0x7fb4d5d053a0.centerX &#x3D;&#x3D; TestView:0x7fb4d5d04fa0.centerX&gt;</span><br><span class="line">Root Add Constraint : &lt;MASLayoutConstraint:0x6000000b7940 TestView:0x7fb4d5d053a0.centerY &#x3D;&#x3D; TestView:0x7fb4d5d04fa0.centerY&gt;</span><br><span class="line">Container Add Constraint : &lt;MASLayoutConstraint:0x6080000b6a40 TestView:0x7fb4d5d053a0.width &#x3D;&#x3D; 100&gt;</span><br><span class="line">Container Add Constraint : &lt;MASLayoutConstraint:0x6000000b7be0 TestView:0x7fb4d5d053a0.height &#x3D;&#x3D; 100&gt;</span><br><span class="line">snapshot with size : &#123;100, 100&#125;</span><br><span class="line">Container move to super : &lt;_UISnapshotWindow: 0x7fb4d5e01b80&gt;</span><br><span class="line">Container drawing rect.</span><br><span class="line">Container move to super : (null)</span><br><span class="line">Container move to super : Root</span><br><span class="line">Root Add Constraint : &lt;MASLayoutConstraint:0x6000000b7940 TestView:0x7fb4d5d053a0.centerY &#x3D;&#x3D; TestView:0x7fb4d5d04fa0.centerY&gt;</span><br><span class="line">Root Add Constraint : &lt;MASLayoutConstraint:0x6080000b6920 TestView:0x7fb4d5d053a0.centerX &#x3D;&#x3D; TestView:0x7fb4d5d04fa0.centerX&gt;</span><br><span class="line">snapshot complete</span><br></pre></td></tr></table></figure>
+<p>可以看到，Container 自身的约束并不随着 superview 的改变而被破坏（事实上如果你在 IB 里面直接拷贝视图，会发现其自身的约束也是会保留的），而它和 superview 之间的约束同样被系统记录了下来，在恢复视图时重新添加约束。</p>
+<h3 id="Everything’s-fine-until-it’s-not"><a href="#Everything’s-fine-until-it’s-not" class="headerlink" title="Everything’s fine until it’s not"></a>Everything’s fine until it’s not</h3><p>从上面几个实验看来，对不在屏幕上的视图调用 <code>drawViewHierarchyInRect:</code> 方法似乎是一件足够安全的事情。</p>
+<blockquote>
+<p><em>你踩到坑另算</em></p>
+</blockquote>
+<p>在项目中，一位同事遇到了类似如下的场景：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)viewDidLoad &#123;</span><br><span class="line">    [<span class="keyword">super</span> viewDidLoad];</span><br><span class="line"></span><br><span class="line">    <span class="built_in">BOOL</span> willBreak = <span class="literal">YES</span>;</span><br><span class="line">    TestView *container = [TestView testViewWithName:<span class="string">@&quot;Container&quot;</span>];</span><br><span class="line">    container.backgroundColor = [<span class="built_in">UIColor</span> redColor];</span><br><span class="line">    TestView *inner = [TestView testViewWithName:<span class="string">@&quot;Inner&quot;</span>];</span><br><span class="line">    inner.backgroundColor = [<span class="built_in">UIColor</span> cyanColor];</span><br><span class="line">    <span class="comment">// add inner &amp; layout</span></span><br><span class="line">    [container addSubview:inner];</span><br><span class="line">    [inner mas_makeConstraints:^(MASConstraintMaker *make) &#123;</span><br><span class="line">        make.center.equalTo(container);</span><br><span class="line">        make.size.mas_equalTo(<span class="built_in">CGSizeMake</span>(<span class="number">100</span>, <span class="number">100</span>));</span><br><span class="line">    &#125;];</span><br><span class="line">    <span class="comment">// add container</span></span><br><span class="line">    [<span class="keyword">self</span>.view addSubview:container];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (!willBreak) &#123;</span><br><span class="line">        [container mas_makeConstraints:^(MASConstraintMaker *make) &#123;</span><br><span class="line">            make.center.equalTo(<span class="keyword">self</span>.view);</span><br><span class="line">            make.size.mas_equalTo(<span class="built_in">CGSizeMake</span>(<span class="number">200</span>, <span class="number">200</span>));</span><br><span class="line">        &#125;];</span><br><span class="line">        [inner snapshotAfterScreenUpdates:<span class="literal">YES</span>]; <span class="comment">//wont break</span></span><br><span class="line">    &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">        [inner snapshotAfterScreenUpdates:<span class="literal">YES</span>]; <span class="comment">// will break</span></span><br><span class="line">        [container mas_makeConstraints:^(MASConstraintMaker *make) &#123;</span><br><span class="line">            make.center.equalTo(<span class="keyword">self</span>.view);</span><br><span class="line">            make.size.mas_equalTo(<span class="built_in">CGSizeMake</span>(<span class="number">200</span>, <span class="number">200</span>));</span><br><span class="line">        &#125;];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其中，willBreak 是一个调试标记，willBreak 为 YES 时，inner 在其被重新加入 container 后，其 center 约束不会被重新添加。<br>可以看到，inner 的 center 约束是否生效的关键区别在于 container 约束的添加时机。</p>
+<p>想弄清楚为什么这里的约束会失效，首先我们要知道 <strong>AutoLayout 与手动算 frame 是不能兼容的。</strong></p>
+<p>考虑如下代码：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// &quot;部分&quot; autolayout</span></span><br><span class="line">    [container addSubview:inner];</span><br><span class="line">    [inner mas_makeConstraints:^(MASConstraintMaker *make) &#123;</span><br><span class="line">        make.center.equalTo(container);</span><br><span class="line">        make.size.mas_equalTo(<span class="built_in">CGSizeMake</span>(<span class="number">50</span>, <span class="number">50</span>));</span><br><span class="line">    &#125;];</span><br><span class="line">    [<span class="keyword">self</span>.view addSubview:container];</span><br><span class="line"></span><br><span class="line"><span class="comment">// 纯 frame 布局</span></span><br><span class="line">    [container addSubview:inner];</span><br><span class="line">    inner.frame = <span class="built_in">CGRectMake</span>(<span class="number">50</span>, <span class="number">50</span>, <span class="number">50</span>, <span class="number">50</span>);</span><br><span class="line">    [<span class="keyword">self</span>.view addSubview:container];</span><br></pre></td></tr></table></figure>
+<p>运行程序，利用 View Debugging 检视视图，会发现，当视图“部分”使用 Autolayout 的时候，与该视图相关的视图也自动添加了必要的约束。<br><img src='/images/drawHierarchyBreaksAutolayout/generatedconstraints.png' width = '820'></img><center><em>container 的位置和大小被自动加上了约束</em></center><br><img src='/images/drawHierarchyBreaksAutolayout/noconstraints.png' width = '820'></img><center><em>如果都是手动设置 frame，则不会有约束</em></center></p>
+<p>回想一下日常使用 IB 进行视图布局时，若为 subview 添加了约束，而不对其 superview 添加约束，是会出现 error 的：<br><img src='/images/drawHierarchyBreaksAutolayout/iberror.png' width = '600'></img></p>
+<h3 id="理清头绪"><a href="#理清头绪" class="headerlink" title="理清头绪"></a>理清头绪</h3><p>结合我们遇到的问题，我们可以得到一个有点道理的猜想：<br>首先，我们将 inner 添加到 container 之中，并添加约束 <code>[inner mas_makeConstraints:^&#123;...&#125;]</code>，此时，inner 和 container 的状态就像上图 IB 中的视图状态一样，是一个 <strong>error</strong> 状态，若此时我们将 container 直接添加到 <code>keywindow</code> 上进行绘制，系统会自动为 container 添加约束，保证大家都使用 Autolayout 布局。</p>
+<p>但我们先进行了 snapshot 操作，inner 此时被移出了 container，照理说，inner 与 container 之间的约束关系应该被系统保存下来，用于后续状态恢复。<strong>但此时，它们之间存在的实质上是错误的布局关系，而系统这里似乎是忽略了错误关系。</strong>但 inner 本身宽高的约束并不会被破坏，同时这两个约束的存在也标志着 <strong>inner 视图使用的是 Autolayout 而非 frame 计算</strong>，最后当绘制方法结束、inner 重新被添加至 container 中时，就会因为缺少位置约束而出现位置错乱。</p>
+<p>两个看似毫不相关的机制，在特殊的场景下竟然会相互冲突。系统内部的实现我们不得而知，但至少我们得到了一些启示：由于 Autolayout 是相对布局，视图之间的依赖繁复，因此其中的关系尚未完成建立完全时，调用可能影响到视图布局的逻辑是存在风险的。而 <code>drawViewHierarchyInRect:</code> 作为使用最广泛的截屏方法，它会擅自挪动视图、选择性忽略 layout 信息，甚至 <a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/23157653/drawviewhierarchyinrectafterscreenupdates-delays-other-animations">打断系统动画</a>，是一个需要谨慎使用的 API。</p>
+<h2 id="延伸阅读"><a href="#延伸阅读" class="headerlink" title="延伸阅读"></a>延伸阅读</h2><p>最近查了好几个 bug，学到了不少新的 debug 姿势，本来还想写一篇文章分享，但是事实上早就有很完备的参考了：<br><a target="_blank" rel="noopener" href="https://objccn.io/issue-19-2/">各种实用的 lldb debug 技巧</a><br><a target="_blank" rel="noopener" href="https://lldb.llvm.org/lldb-gdb.html">lldb 各种命令</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/iOS/" rel="tag"># iOS</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2018/01/04/swift-generic-and-protocol/" rel="prev" title="浅谈 Swift4 中的泛型与协议">
+                  <i class="fa fa-chevron-left"></i> 浅谈 Swift4 中的泛型与协议
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/03/01/create-your-code-snippet/" rel="next" title="从今天开始，不再做一个打字员">
+                  从今天开始，不再做一个打字员 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      const activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      const commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Gocy</span>
+</div>
+  <div class="powered-by">تطبيق الموقع <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>

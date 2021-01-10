@@ -1,38 +1,458 @@
-{% extends '_layout.swig' %}
-{% import '_macro/post.swig' as post_template %}
-{% import '_macro/sidebar.swig' as sidebar_template %}
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
 
 
-{% block title %} {{ page.title }} | {{ config.title }} {% endblock %}
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
 
-{% block page_class %}page-post-detail{% endblock %}
+<link rel="stylesheet" href="/css/main.css">
 
 
-{% block content %}
 
-  <div id="posts" class="posts-expand">
-    {{ post_template.render(page) }}
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.1/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
 
-    <div class="post-spread">
-      {% if theme.jiathis %}
-        {% include '_partials/share/jiathis.swig' %}
-      {% elseif theme.baidushare %}
-        {% include '_partials/share/baidushare.swig' %}
-      {% elseif theme.add_this_id %}
-        {% include '_partials/share/add-this.swig' %}
-      {% elseif theme.duoshuo_shortname and theme.duoshuo_share %}
-        {% include '_partials/share/duoshuo_share.swig' %}
-      {% endif %}
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"blog.gocy.tech","root":"/","images":"/images","scheme":"Muse","version":"8.2.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"بحث...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}};
+  </script>
+<meta name="description" content="转载请注明出处。  如果你是一名 objective-c 开发者，那么相信你多多少少都接触过那神秘而危险的动态替换机制：Method Swizzling；当动态改变 oc 代码无法满足需求的时候，或许你还使用过 fishhook 或是其它用于动态 rebind c 函数的钩子库。在开源社区如此活跃的今天，对上述两种 hook 方法的原理和源码的分析可以说是面面俱到了。 本文并不分析这两种通用的钩">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hook objc_msgSend -- 从 0.5 到 1">
+<meta property="og:url" content="https://blog.gocy.tech/2019/07/08/hook-msgSend-advance/index.html">
+<meta property="og:site_name" content="Gocy&#39;s home page">
+<meta property="og:description" content="转载请注明出处。  如果你是一名 objective-c 开发者，那么相信你多多少少都接触过那神秘而危险的动态替换机制：Method Swizzling；当动态改变 oc 代码无法满足需求的时候，或许你还使用过 fishhook 或是其它用于动态 rebind c 函数的钩子库。在开源社区如此活跃的今天，对上述两种 hook 方法的原理和源码的分析可以说是面面俱到了。 本文并不分析这两种通用的钩">
+<meta property="og:locale">
+<meta property="og:image" content="https://blog.gocy.tech/images/hookMsgSendAdvance/stackFrame.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/hookMsgSendAdvance/simpleAssembly.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/hookMsgSendAdvance/countAssembly.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/hookMsgSendAdvance/StackCallProcedure.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/hookMsgSendAdvance/incompleteStacktrace.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/hookMsgSendAdvance/stackframe1.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/hookMsgSendAdvance/brokenCFA.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/hookMsgSendAdvance/goodCFA.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/hookMsgSendAdvance/halfokStacktrace.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/hookMsgSendAdvance/stackframe1.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/hookMsgSendAdvance/fakeStackframe.png">
+<meta property="og:image" content="https://blog.gocy.tech/images/hookMsgSendAdvance/finalStack.png">
+<meta property="article:published_time" content="2019-07-08T11:47:53.000Z">
+<meta property="article:modified_time" content="2019-07-11T13:26:43.000Z">
+<meta property="article:author" content="Gocy">
+<meta property="article:tag" content="iOS">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://blog.gocy.tech/images/hookMsgSendAdvance/stackFrame.png">
+
+
+<link rel="canonical" href="https://blog.gocy.tech/2019/07/08/hook-msgSend-advance/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh'
+  };
+</script>
+<title>Hook objc_msgSend -- 从 0.5 到 1 | Gocy's home page</title>
+  
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="تشغيل شريط التصفح" role="button">
     </div>
   </div>
 
-{% endblock %}
+  <div class="site-meta">
 
-{% block sidebar %}
-  {{ sidebar_template.render(true) }}
-{% endblock %}
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">Gocy's home page</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">把热爱的事情做好</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
 
 
-{% block script_extra %}
-  {% include '_scripts/pages/post-details.swig' %}
-{% endblock %}
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          المحتويات
+        </li>
+        <li class="sidebar-nav-overview">
+          عام
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Hook-objc-msgSend-%E4%BB%8E-0-%E5%88%B0-0-5"><span class="nav-number">1.</span> <span class="nav-text">Hook objc_msgSend, 从 0 到 0.5</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8-%E6%A0%88%E7%A9%BA%E9%97%B4%E8%AF%A6%E8%A7%A3"><span class="nav-number">1.1.</span> <span class="nav-text">函数调用 - 栈空间详解</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Let%E2%80%99s-hook"><span class="nav-number">1.2.</span> <span class="nav-text">Let’s hook</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Hook-objc-msgSend-%E4%BB%8E-0-5-%E5%88%B0-1"><span class="nav-number">2.</span> <span class="nav-text">Hook objc_msgSend, 从 0.5 到 1</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%AE%8B%E7%BC%BA%E7%9A%84%E5%A0%86%E6%A0%88"><span class="nav-number">2.1.</span> <span class="nav-text">残缺的堆栈</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#One-more-step"><span class="nav-number">2.2.</span> <span class="nav-text">One more step</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8E-0-5-%E5%88%B0-0-x"><span class="nav-number">3.</span> <span class="nav-text">从 0.5 到 0.x</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%83%E4%B9%A0%E6%97%B6%E5%88%BB"><span class="nav-number">4.</span> <span class="nav-text">练习时刻</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Gocy</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives">
+          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-name">المقالات</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">الوسوم</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh">
+    <link itemprop="mainEntityOfPage" href="https://blog.gocy.tech/2019/07/08/hook-msgSend-advance/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Gocy">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Gocy's home page">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Hook objc_msgSend -- 从 0.5 到 1
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">نُشر في</span>
+
+      <time title="أُنشأ: 2019-07-08 19:47:53" itemprop="dateCreated datePublished" datetime="2019-07-08T19:47:53+08:00">2019-07-08</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">عُدل في</span>
+        <time title="عُدل: 2019-07-11 21:26:43" itemprop="dateModified" datetime="2019-07-11T21:26:43+08:00">2019-07-11</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <blockquote>
+<p><em>转载请注明出处。</em></p>
+</blockquote>
+<p>如果你是一名 <code>objective-c</code> 开发者，那么相信你多多少少都接触过那神秘而危险的动态替换机制：<a target="_blank" rel="noopener" href="https://nshipster.cn/method-swizzling/">Method Swizzling</a>；当动态改变 oc 代码无法满足需求的时候，或许你还使用过 <a target="_blank" rel="noopener" href="https://github.com/facebook/fishhook">fishhook</a> 或是其它用于动态 rebind c 函数的钩子库。在开源社区如此活跃的今天，对上述两种 hook 方法的原理和源码的分析可以说是面面俱到了。</p>
+<p>本文并不分析这两种通用的钩子的实现方式，而是对准那一个让所有 oc 开发者魂牵梦绕的 c 方法：<code>objc_msgSend</code>，我们来聊聊 hook 它所带来的问题，以及解决问题的方案。</p>
+<blockquote>
+<p>阅读本文之前，你应该具备一定阅读汇编的能力，同时对函数调用时，栈空间的分配有一定的概念。<br>本文所有汇编代码基于 arm64。</p>
+</blockquote>
+<a id="more"></a>
+
+<h2 id="Hook-objc-msgSend-从-0-到-0-5"><a href="#Hook-objc-msgSend-从-0-到-0-5" class="headerlink" title="Hook objc_msgSend, 从 0 到 0.5"></a>Hook objc_msgSend, 从 0 到 0.5</h2><h3 id="函数调用-栈空间详解"><a href="#函数调用-栈空间详解" class="headerlink" title="函数调用 - 栈空间详解"></a>函数调用 - 栈空间详解</h3><blockquote>
+<p>调试的时候，lldb 的 <code>register read</code> 命令是你的好朋友。<br>下文中，会频繁出现寄存器名称，如 fp, sp, lr。我会通过“寄存器”和“值”来区别我所指的对象。</p>
+</blockquote>
+<p>我们先从函数调用的幕后说起。</p>
+<p>如果你之前了解过函数调用时栈空间的栈分配情况，你应该见过类似下面的栈图：</p>
+<p><img src='/images/hookMsgSendAdvance/stackFrame.png' width = '900'></img></p>
+<p>在这里，我们需要明确两块内存空间：一块是“栈空间”，上图中蓝色框中的内存属于这里，fp、sp 之中存储的通常是这个空间的地址；一块是“代码空间”，是用于存放我们所编写的函数的汇编指令的，上图中的 IMP A/B/C 存放在这里。你可以这样理解他们之间的关系：我们写的代码被编译成汇编指令后，被 runtime 加载进“代码空间”并开始执行，汇编执行过程中，所产生的中间变量（函数传参、值类型局部变量等），被存储在“栈空间”。当然，为了实现函数跳转、返回、堆栈捕获等功能，栈空间还额外存储了 <code>fp</code> 值以及 <code>lr</code> 值（注意是值！）。</p>
+<p>让我们结合实际例子，来加深对上图的理解，并且弄清楚这个堆栈是如何生成的，考虑如下代码：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">AppDelegate</span></span></span><br><span class="line">- (<span class="keyword">void</span>)simple</span><br><span class="line">&#123;</span><br><span class="line">    [<span class="keyword">self</span> count:<span class="number">1</span>];</span><br><span class="line">&#125;</span><br><span class="line">- (<span class="keyword">int</span>)count:(<span class="keyword">int</span>)i</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">return</span> i;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
+<p>先来看 <code>-[AppDelegate simple]</code> 的汇编：<br><img src='/images/hookMsgSendAdvance/simpleAssembly.png' width = '900'></img></p>
+<blockquote>
+<p>w2 代表只用 2 号寄存器的 32 位。<br><code>bl</code>、<code>blr</code> 指令在跳转的同时，会将 <code>lr</code> 寄存器的值设置为当前 pc+4byte。</p>
+</blockquote>
+<p>从上面的汇编结合一点点思考，我们得出了一些 <strong>非常非常重要</strong> 的结论：</p>
+<ol>
+<li><p>“不给别人添麻烦”：每个函数都有自己的一块操作空间，我们称其为“栈帧(stack frame)”。寄存器 <code>fp</code>、<code>sp</code> 的值是栈帧范围的唯一标识，作为 <code>simple</code> 函数，为了保证自己 <code>return</code> 之后，调用者能继续正常执行，函数体需要自己负责维护 <code>fp/sp</code> 的状态，保证进出时一致。而正是因为大家都遵循这样的规则，在后续代码中，我们才能放心的在调用完 <code>count:</code> 之后，继续使用 <code>fp/sp</code> 寄存器。</p>
+</li>
+<li><p>“自己的事情自己做”：一个函数有多少参数、多少局部变量，进而需要多大的栈空间，只有函数自己知道，所以函数内部需要自己“挪动” <code>fp</code>、<code>sp</code> 的指向，来“声明”自己所需要的空间。</p>
+</li>
+<li><p>“一切行动听指挥”：我们知道，<code>lr</code> 寄存器存储着返回地址，当函数内部又有函数调用时，我们不可避免的需要改变 <code>lr</code> 寄存器的值，那么为了保证自己能成功回到上一级，函数自己需要将 <code>lr</code> 地址存好，并在执行结束之前重新设置给 <code>lr</code> 寄存器。</p>
+</li>
+</ol>
+<p>在上面的代码中，我们看到 <code>simple</code> 的汇编代码将参数值 1 放进了 2 号寄存器中，那 <code>count:</code> 如何知道我将参数放在了这里呢？我们再看看 <code>count:</code> 方法的汇编代码：</p>
+<p><img src='/images/hookMsgSendAdvance/countAssembly.png' width = '900'></img></p>
+<p>从 <code>count:</code> 的汇编，我们得出了另外一个<strong>重要结论</strong>：<br>函数参数的传递并不是口耳相传，而是依赖强类型约束和汇编规范的硬编码！不但寄存器的顺序有严格规定，实际的读写操作也和数据类型强相关（<code>int</code> 类型，寄存器选择用 <code>w</code> 而非 <code>x</code>，存储到栈空间偏移量也不是 8 的整数倍）。但是寄存器的数量终归是有限的，当函数内部需要调用多参方法的时候，调用者的会扩大其栈帧的大小，将寄存器塞不下的参数按一定顺序放置在栈帧中。而被调用方，同样是通过硬编码 offset 的方式，一个一个的从前一个函数的栈帧中读取出来。</p>
+<blockquote>
+<p><em>你可以自己写一个多参数的函数验证这一结论。</em></p>
+</blockquote>
+<h3 id="Let’s-hook"><a href="#Let’s-hook" class="headerlink" title="Let’s hook"></a>Let’s hook</h3><p>结合上面所得到的结论，我们再来看看如何 hook <code>objc_msgSend</code>（网上有许多开源项目对 <code>objc_msgSend</code> 进行了 hook，实现体大同小异，本文源码均基于美图的开源性能工具 <a target="_blank" rel="noopener" href="https://github.com/meitu/MTHawkeye">MTHawkeye</a>）：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">__attribute__((__naked__)) <span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">hook_Objc_msgSend</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="comment">// Save parameters.</span></span><br><span class="line">    save()</span><br><span class="line">    <span class="function">__asm <span class="title">volatile</span><span class="params">(<span class="string">&quot;mov x2, lr\n&quot;</span>)</span></span>;</span><br><span class="line">    <span class="function">__asm <span class="title">volatile</span><span class="params">(<span class="string">&quot;mov x3, x4\n&quot;</span>)</span></span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// Call our before_objc_msgSend.</span></span><br><span class="line">    call(blr, &amp;before_objc_msgSend)</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// Load parameters.</span></span><br><span class="line">    load()</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// Call through to the original objc_msgSend.</span></span><br><span class="line">    call(blr, orig_objc_msgSend)</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// Save original objc_msgSend return value.</span></span><br><span class="line">    save()</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// Call our after_objc_msgSend.</span></span><br><span class="line">    call(blr, &amp;after_objc_msgSend)</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// restore lr</span></span><br><span class="line">    <span class="function">__asm <span class="title">volatile</span><span class="params">(<span class="string">&quot;mov lr, x0\n&quot;</span>)</span></span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// Load original objc_msgSend return value.</span></span><br><span class="line">    load()</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// return</span></span><br><span class="line">    ret()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://github.com/Gocy015/HookObjcMsgSend/blob/master/MTHCallTraceCore-starter.c">查看此文件的完整代码</a></p>
+</blockquote>
+<p>为了方便阅读，原开发者将大部分指令定义成了宏，阅读其展开后，我们可以总结出：</p>
+<ol>
+<li><strong>和传统函数不同，函数起头没有声明属于自己的栈空间：<code>fp</code>、<code>sp</code> 和上一栈帧一致。</strong></li>
+<li>把所有寄存器的值存在低址，并下移 <code>sp</code>，保证后续函数调用不会修改到这部分栈空间。</li>
+<li>把 <code>lr</code> 寄存器的值当做参数传递给 <code>before_objc_msgSend</code>，后者将其存至内存中（放到堆区的结构体里面了）</li>
+<li><strong>在调用 <code>orig_objc_msgSend</code> 之前，恢复寄存器状态以及 <code>sp</code> 指向，使栈空间的状态恢复到与第一步一致，此时调用 <code>orig_objc_msgSend</code>，所有寄存器、栈帧内容均和原始调用方执行跳转时一致。</strong></li>
+<li><code>after_objc_msgSend</code> 将原有 <code>lr</code> 的值作为返回值返回，并设置至 <code>lr</code> 寄存器之中，确保能正确返回。</li>
+</ol>
+<p>整套方案最巧妙的点在于，<strong>“复用”了调用方的整个栈帧</strong>，站在栈空间的角度来看，hook 方法对于调用和被调用方都是透明的；而为了达到 100% 还原栈帧，<code>lr</code> 的值便只能传递出去存至堆区了。</p>
+<p>在几个关键点，堆栈和寄存器状态如图：</p>
+<p><img src='/images/hookMsgSendAdvance/StackCallProcedure.png' width = '900'></img></p>
+<p>可以看到，在调用原实现时，唯一的不同点就是 <code>lr</code> 寄存器指向了 hook 方法，使原方法执行完后回到 hook 方法中。在汇编指令执行时，位于当前 <code>sp</code> 寄存器下面(低址)的内存属于“无人认领”的内存，可以任意使用。这就是为什么第二步我们需要下移 <code>sp</code>，而第三步我们也不需要清理低址残留的寄存器值。</p>
+<p>至此，我们理解了目前网上最流行的方案的整体流程和大致原理。</p>
+<h2 id="Hook-objc-msgSend-从-0-5-到-1"><a href="#Hook-objc-msgSend-从-0-5-到-1" class="headerlink" title="Hook objc_msgSend, 从 0.5 到 1"></a>Hook objc_msgSend, 从 0.5 到 1</h2><p>方案十分巧妙，似乎没有什么问题，接下来让我们开始使用，考虑如下代码：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">AppDelegate</span></span></span><br><span class="line">- (<span class="built_in">BOOL</span>)application:(__unused <span class="built_in">UIApplication</span> *)application didFinishLaunchingWithOptions:(__unused <span class="built_in">NSDictionary</span> *)launchOptions &#123;</span><br><span class="line">    [<span class="keyword">self</span> functionLevel1];</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">YES</span>;</span><br><span class="line">&#125;</span><br><span class="line">- (<span class="keyword">void</span>)functionLevel1</span><br><span class="line">&#123;</span><br><span class="line">    [<span class="keyword">self</span> functionLevel2];</span><br><span class="line">&#125;</span><br><span class="line">- (<span class="keyword">void</span>)functionLevel2</span><br><span class="line">&#123;</span><br><span class="line">    [<span class="keyword">self</span> functionLevel3];</span><br><span class="line">&#125;</span><br><span class="line">- (<span class="keyword">void</span>)functionLevel3</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@&quot;Hey, it&#x27;s level 3!&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
+<p>随后，让我们在 <code>functionLevel3</code> 之中下一个断点：<br><img src='/images/hookMsgSendAdvance/incompleteStacktrace.png' width = '720'></img></p>
+<p>NO！函数调用堆栈几乎彻底消失了，假如我们希望实现监控之类的功能，需要长期将 hook 打开，这样的情况显然是不能接受的。那么能不能解决这个问题呢？</p>
+<h3 id="残缺的堆栈"><a href="#残缺的堆栈" class="headerlink" title="残缺的堆栈"></a>残缺的堆栈</h3><p>如果你把问题设置为“hook 完 objc_msgSend 之后，Xcode 堆栈看不到了”，似乎很难找到一个切入点，那么我们换一个角度思考，站在更底层的角度看，调用堆栈到底是什么呢？我们知道每次函数调用的时候，栈空间都会有新的栈帧在低址开辟，一个一个按顺序摆放，那从低往高遍历，不就是咱们的调用栈吗？是不是 hook 之后，我们把栈区的排列弄坏了呢？我们来分析一下调用到 <code>functionLevel3</code> 时，栈区的栈帧们应该长什么样：</p>
+<p><img src='/images/hookMsgSendAdvance/stackframe1.png' width = '620'></img></p>
+<p>回想一下 hook 方法的实现，我们在调用原 <code>objc_msgSend</code> 时，为了保证原函数执行完能回到 hook 方法中，我们通过 <code>blr</code> 指令将 <code>lr</code> 寄存器的值改为了 <code>hook_Objc_msgSend</code> 内的指令地址，<code>functionLevel1</code>、<code>functionLevel2</code> 也是一样。所以此时栈区的布局应该就是如图所示，如此一来，对 Xcode 堆栈的疑惑也就解决了一半：既然栈区存着的返回地址都指向的是 <code>hook_Objc_msgSend</code>，那么 Xcode 只能显示出 hook 函数也就理所应当了；但问题的另一半依然令人费解：程序可以执行、不会崩溃，证明栈区栈帧的布局应该是正确的，那么尽管符号不正确，调用层级也应该能正确显示，为什么这里只显示了一层呢？</p>
+<p>要弄清楚问题的原因，就必须弄清楚系统是如何查找调用栈的。由于问题出在编译器下断点时，所以我选择去看看 <a target="_blank" rel="noopener" href="https://github.com/llvm-mirror/lldb">LLDB 的源码</a>。我并没有在源码中直接找到答案，毕竟这是一个庞大而且缺乏 debug 手段的工程，但我在方法 <code>UnwindLLDB::RegisterSearchResult RegisterContextLLDB::SavedLocationForRegister</code> 中发现，堆栈的寻找似乎和一个叫 <code>unwind</code> 的机制有很大的关系，且源码中有大量日志打印，经过查阅，我最终发现使用在 lldb 中使用 <code>log enable lldb unwind</code> 指令后，就能在控制台打印出 lldb 回溯堆栈的相关日志了。</p>
+<p>那么一次“正常”的堆栈查找，和我们 hook 之后的堆栈查找的区别在哪里呢？经过实验对比，我发现了一些端倪：</p>
+<p><img src='/images/hookMsgSendAdvance/brokenCFA.png' width = '720'></img><center><em>残缺堆栈打印的日志</em></center></p>
+<p><img src='/images/hookMsgSendAdvance/goodCFA.png' width = '720'></img><center><em>完整堆栈打印的日志</em></center></p>
+<p>限于篇幅，并没有将日志截取完全，需要注意的是两图中标红的部分，以及一个叫 <code>CFA</code> 的概念。<br>先说说未贴出的日志：对于残缺的堆栈，由于 <code>CFA</code> 停止移动了，尝试获取上一个调用栈时，发现地址重复，就停止寻找了；而完整堆栈的 <code>CFA</code> 正常，可以一直回溯找到调用顶层。</p>
+<blockquote>
+<p><em>建议读者自己打开 unwind 日志并进行调试，看看 <code>CFA</code> 和 <code>fp</code>, <code>sp</code> 寄存器的关系。</em></p>
+</blockquote>
+<p>两边日志的转折点就在这标红的一行：hook 开启后，这个 <code>CFA</code> 似乎指向错误了。<code>CFA</code> 是 <code>canonical frame address</code> 的简称，在谷歌上搜，排名靠前又有一些实际内容的答案就只有 <a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/7534420/gas-explanation-of-cfi-def-cfa-offset">这一篇</a>，回答中指出：</p>
+<blockquote>
+<p>Typically, the CFA is defined to be the value of the stack pointer at the call site in the previous frame</p>
+</blockquote>
+<p>可以看到，它确实和查找上一级调用有着密切关系。巧合的是，这篇问答贴了很多汇编代码，一眼就让人觉得熟悉；现在，随便去打开一个 .m 文件的汇编，你会看到非常相似的代码模式：一些汇编指令，夹杂着一些以 “.” 开头的汇编修饰，上下滑动，看看各个函数的汇编，你会惊讶的发现所有的方法都有如下的几句：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">.cfi_def_cfa w29, 16</span><br><span class="line">.cfi_offset w30, -8</span><br><span class="line">.cfi_offset w29, -16</span><br></pre></td></tr></table></figure>
+<p><code>CFA</code>，<code>offset</code>，<code>x29(fp)</code>，<code>x30(lr)</code>，这几个东西组合起来令人兴奋！</p>
+<p>原来堆栈的回溯，靠的并不是 “我按约定，把 fp、lr 存在这里，你需要就直接来读” 这样的隐式约定，而是通过白纸黑字的显示声明！还记得 <code>hook_Objc_msgSend</code> 方法是多么“干净”吗，尽管我们没有拓展出新的栈帧，但的确是进入了另一段指令地址，还没有任何回溯相关的声明。由于未对原栈帧进行任何修改，所以我们可以直接拷贝上述代码，用来声明我们存储 <code>fp</code>，<code>lr</code> 的地方：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">__attribute__((__naked__)) <span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">hook_Objc_msgSend</span><span class="params">()</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function">__asm <span class="title">volatile</span><span class="params">(<span class="string">&quot;.cfi_def_cfa w29, 16\n&quot;</span> </span></span></span><br><span class="line"><span class="function"><span class="params">                    <span class="string">&quot;.cfi_offset w30, -8\n&quot;</span> </span></span></span><br><span class="line"><span class="function"><span class="params">                    <span class="string">&quot;.cfi_offset w29, -16\n&quot;</span>)</span></span>;</span><br><span class="line">    <span class="comment">// Save parameters.</span></span><br><span class="line">    save()</span><br><span class="line">    </span><br><span class="line">    ... </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>再次运行，调用层级的问题解决！<br><img src='/images/hookMsgSendAdvance/halfokStacktrace.png' width = '720'></img></p>
+<h3 id="One-more-step"><a href="#One-more-step" class="headerlink" title="One more step"></a>One more step</h3><p>调用层级尽管正确了，但一连串的 <code>hook_Objc_msgSend</code> 其实依然不能为我们的调试提供有价值的信息，让我们再回头重新审视一下现在的栈区：</p>
+<p><img src='/images/hookMsgSendAdvance/stackframe1.png' width = '620'></img><center><em>和上面的是同一张图</em></center></p>
+<p>站在系统的角度而言，它其实捕获到了正确的堆栈，毕竟栈区存储的信息就是如此；而为了在调用完原方法后，系统能回到 hook 函数中继续走我们的 after 逻辑，我们又的确只能在调用 <code>orig_bjc_msgSend</code> 的时候，将 <code>lr</code> 寄存器的值设置为 hook 方法。其实核心矛盾点在这里：<code>hook_Objc_msgSend</code> 与调用者共享了栈帧，导致原 <code>lr</code> 在栈区无法存放；我们将 <code>lr</code> 值存到堆区，的确可以保证程序正常运行，但却使得系统回溯堆栈时无从下手。<strong>我们需要让 <code>lr</code> 值对系统可见，就必须在栈区开辟一个完整的栈帧，和一个普通函数一样按规范存储和声明各个寄存器的值：</strong></p>
+<p><img src='/images/hookMsgSendAdvance/fakeStackframe.png' width = '260'></img></p>
+<p>那么我们自行开辟的栈帧应该多大，里面又应该放些什么呢？通过前面的例子我们知道，函数调用时，被调用方除了会从寄存器中读取参数外，也会从调用方的栈帧内读取参数，为了保证程序正常的执行，我们需要为被调用方提供正确的上下文，因此，我们需要<strong>拷贝</strong>调用方的栈帧。</p>
+<p>思路明确之后，代码就非常好写了：由于进入 hook 方法时，寄存器状态、<code>fp/sp</code> 指向均是调用方设置的，我们只需要拷贝下来就可以了。唯一需要注意的一点是：我们拷贝的是<strong>除了栈顶之外的所有内容</strong>，因为栈顶我们要用来放 <code>fp</code> 寄存器的值。读者可以自行尝试实现这块的代码，作为参考，我将我的实现 <a target="_blank" rel="noopener" href="https://github.com/Gocy015/HookObjcMsgSend/blob/master/MTHCallTraceCore-master.c">放在这里</a>。</p>
+<blockquote>
+<p><em>所贴代码可以运行，但并非最优代码：在栈区存放 <code>lr</code> 之后，我们就可以不需要在堆区存储其值了。另外由于汇编水平有限，实现也并非最精简的代码。</em></p>
+</blockquote>
+<p>在拷贝完栈帧，存放好 <code>fp</code>、<code>lr</code> 的值，并声明回溯地址后，Xcode 中的堆栈现在变成了这样：</p>
+<p><img src='/images/hookMsgSendAdvance/finalStack.png' width = '720'></img></p>
+<p>堆栈已经能够完整展示了！</p>
+<h2 id="从-0-5-到-0-x"><a href="#从-0-5-到-0-x" class="headerlink" title="从 0.5 到 0.x"></a>从 0.5 到 0.x</h2><p>尽管本文的标题是《Hook objc_msgSend – 从 0.5 到 1》，但实际上解决方案并不完美。一方面，我们拷贝了每一个 oc 方法的栈帧，在空间和时间上都有一定的牺牲；另一方面，lldb 所捕获的堆栈有大量冗余的 <code>hook_Objc_msgSend</code> 符号，当调用层级很深的时候，体验相当不好，但本文的探索到这里就止步了，后续如果有更好的解决方案，请务必联系我。</p>
+<h2 id="练习时刻"><a href="#练习时刻" class="headerlink" title="练习时刻"></a>练习时刻</h2><p>对基类方法的调用并不是走 <code>objc_msgSend</code> 流程，而是走的 <code>objc_msgSendSuper</code>，在鼓励继承的 oc 开发中，漏掉对基类的监控可不是什么好事。<code>hook_objc_msgSendSuper</code> 的实现与 <code>hook_Objc_msgSend</code> 类似，动手试试吧！</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/iOS/" rel="tag"># iOS</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2018/12/25/2018-Yearly/" rel="prev" title="2018年度总结">
+                  <i class="fa fa-chevron-left"></i> 2018年度总结
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2019/12/25/2019-yearly/" rel="next" title="2019年度总结">
+                  2019年度总结 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      const activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      const commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Gocy</span>
+</div>
+  <div class="powered-by">تطبيق الموقع <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>

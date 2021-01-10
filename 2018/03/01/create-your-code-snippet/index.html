@@ -1,38 +1,374 @@
-{% extends '_layout.swig' %}
-{% import '_macro/post.swig' as post_template %}
-{% import '_macro/sidebar.swig' as sidebar_template %}
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
 
 
-{% block title %} {{ page.title }} | {{ config.title }} {% endblock %}
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
 
-{% block page_class %}page-post-detail{% endblock %}
+<link rel="stylesheet" href="/css/main.css">
 
 
-{% block content %}
 
-  <div id="posts" class="posts-expand">
-    {{ post_template.render(page) }}
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.1/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
 
-    <div class="post-spread">
-      {% if theme.jiathis %}
-        {% include '_partials/share/jiathis.swig' %}
-      {% elseif theme.baidushare %}
-        {% include '_partials/share/baidushare.swig' %}
-      {% elseif theme.add_this_id %}
-        {% include '_partials/share/add-this.swig' %}
-      {% elseif theme.duoshuo_shortname and theme.duoshuo_share %}
-        {% include '_partials/share/duoshuo_share.swig' %}
-      {% endif %}
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"blog.gocy.tech","root":"/","images":"/images","scheme":"Muse","version":"8.2.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"بحث...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}};
+  </script>
+<meta name="description" content="分享一下如何在 Xcode 中创建快捷代码段，提升开发效率。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从今天开始，不再做一个打字员">
+<meta property="og:url" content="https://blog.gocy.tech/2018/03/01/create-your-code-snippet/index.html">
+<meta property="og:site_name" content="Gocy&#39;s home page">
+<meta property="og:description" content="分享一下如何在 Xcode 中创建快捷代码段，提升开发效率。">
+<meta property="og:locale">
+<meta property="og:image" content="https://blog.gocy.tech/images/CodeSnippet/XcodeAutoComplete.gif">
+<meta property="og:image" content="https://blog.gocy.tech/images/CodeSnippet/XcodeSnippet.gif">
+<meta property="og:image" content="https://blog.gocy.tech/images/CodeSnippet/MySnippet.gif">
+<meta property="og:image" content="https://blog.gocy.tech/images/CodeSnippet/PropertySnippet.gif">
+<meta property="og:image" content="https://blog.gocy.tech/images/CodeSnippet/IncorrectWeak.png">
+<meta property="article:published_time" content="2018-03-01T01:54:20.000Z">
+<meta property="article:modified_time" content="2018-03-01T03:26:53.000Z">
+<meta property="article:author" content="Gocy">
+<meta property="article:tag" content="iOS">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://blog.gocy.tech/images/CodeSnippet/XcodeAutoComplete.gif">
+
+
+<link rel="canonical" href="https://blog.gocy.tech/2018/03/01/create-your-code-snippet/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh'
+  };
+</script>
+<title>从今天开始，不再做一个打字员 | Gocy's home page</title>
+  
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="تشغيل شريط التصفح" role="button">
     </div>
   </div>
 
-{% endblock %}
+  <div class="site-meta">
 
-{% block sidebar %}
-  {{ sidebar_template.render(true) }}
-{% endblock %}
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">Gocy's home page</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">把热爱的事情做好</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
 
 
-{% block script_extra %}
-  {% include '_scripts/pages/post-details.swig' %}
-{% endblock %}
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          المحتويات
+        </li>
+        <li class="sidebar-nav-overview">
+          عام
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%87%AA%E5%8A%A8%E8%A1%A5%E5%85%A8%E4%B8%8E-Code-Snippet"><span class="nav-number">1.</span> <span class="nav-text">自动补全与 Code Snippet</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA-Code-Snippet"><span class="nav-number">2.</span> <span class="nav-text">创建 Code Snippet</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AF%B9%E5%8F%B7%E5%85%A5%E5%BA%A7"><span class="nav-number">2.1.</span> <span class="nav-text">对号入座</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Gocy</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives">
+          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-name">المقالات</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">الوسوم</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh">
+    <link itemprop="mainEntityOfPage" href="https://blog.gocy.tech/2018/03/01/create-your-code-snippet/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Gocy">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Gocy's home page">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          从今天开始，不再做一个打字员
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">نُشر في</span>
+      
+
+      <time title="أُنشأ: 2018-03-01 09:54:20 / عُدل: 11:26:53" itemprop="dateCreated datePublished" datetime="2018-03-01T09:54:20+08:00">2018-03-01</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>分享一下如何在 Xcode 中创建快捷代码段，提升开发效率。</p>
+<a id="more"></a>
+
+<h3 id="自动补全与-Code-Snippet"><a href="#自动补全与-Code-Snippet" class="headerlink" title="自动补全与 Code Snippet"></a>自动补全与 Code Snippet</h3><p>在使用 IDE 开发时（如 Xcode），IDE 一般会根据当前的键入，显示一个自动补全的候选框，用于快速补全输入，提高编码效率。</p>
+<p><img src='/images/CodeSnippet/XcodeAutoComplete.gif'></img></p>
+<p>上图中，当我们键入 <code>self.view</code> 以及 <code>self.view setNeeds</code> 时，可以看到自动补全框最左侧有诸如 <code>P</code> 和 <code>M</code> 的字样，这很好理解，<code>P</code> 即是当前 <code>self</code> 所包含的 property，而 <code>M</code> 则是实例方法，这些自动补全，是 Xcode 对当前类进行编译、生成索引之后为我们提供的。</p>
+<p>而自动补全框之中的另一类选项，才是我们今天要讨论的重点：</p>
+<p><img src='/images/CodeSnippet/XcodeSnippet.gif'></img></p>
+<p>此类补全的左侧标记为 <code>&#123;&#125;</code>，也就是本文的主角 Code Snippet，Code Snippet 并不是编译器编译分析后的结果，它是一个预设好的文本片段，只要输入关键字就会出现。</p>
+<h3 id="创建-Code-Snippet"><a href="#创建-Code-Snippet" class="headerlink" title="创建 Code Snippet"></a>创建 Code Snippet</h3><p>创建一个 Code Snippet 的方式非常简单，首先在 Xcode 的 Utility 面板底部，选中 <code>&#123;&#125;</code> tab，然后在编辑器中选中目标代码段，再 <code>cmd+drag</code> 拖入 tab 之中即可。</p>
+<p><img src='/images/CodeSnippet/MySnippet.gif'></img></p>
+<p>可以看到，在简单设置完 Completion Shortcut 之后，你就可以在自动补全中找到它了，另外 Snippet 的内容并不局限于代码，所以其实这是一个 Text Snippet。</p>
+<h4 id="对号入座"><a href="#对号入座" class="headerlink" title="对号入座"></a>对号入座</h4><p>你已经创建好一段自定义 Code Snippet 了，现在就可以开始整理你的常用代码，然后把自己从无尽的打字/复制粘贴中解放出来了，但我相信你还想更进一步的。下图是我创建的一个便捷声明 property 的 snippet，先来看看效果：</p>
+<p><img src='/images/CodeSnippet/PropertySnippet.gif'></img></p>
+<p>除了固定的文本，还加入了占位文本，方便输入，简直完美！</p>
+<p>要实现该效果的方式也非常简单，在 Code Snippet 编辑框中，你只需要输入 <code>&lt;#placeholder#&gt;</code>，Snippet 就会有对应的占位符。</p>
+<p>而这个编辑框中，还有几个下拉选框，其中 Platform 和 Language 都很好理解，相当于作用域，毕竟我们不想在编写 c++ 的时候提示一些为 oc 设置的代码段。</p>
+<p>而在底部，还有一个很重要的选框：Completion Scopes。</p>
+<p>先来看看我们的 <code>weakprop</code> 提示会在什么情况下出现：</p>
+<p><img src='/images/CodeSnippet/IncorrectWeak.png' width = 660></img></p>
+<p>似乎它在任何情况下都会弹出提示，这显然是不对的，property 声明应该只在类声明 <code>@interface ... @end</code> 中间出现，而 Completion Scopes 正是用于控制其作用域的。其中有两个看起来像是我们想要的，分别是：<code>Class Interface Methods</code> 和 <code>Class Interface Variables</code>，乍看之下，似乎这个 Variables 的定义就是我们要找的，但是经过实验，这两个作用域其实分别对应：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">ViewController</span> ()</span>&#123;</span><br><span class="line">    <span class="comment">//Class Interface Variables</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//Class Interface Methods</span></span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
+<p>从 <code>@property</code> 关键字的角度出发，这样倒是理解的通了，毕竟其本质就是为 ivar 声明 getter 和 setter 方法。在为 <code>weakprop</code> 添加作用域之后，一个完整的 Code Snippet 就创建完成了。</p>
+<p>以上就是本文的全部内容，赶紧动手去创建自己的 Snippet 吧！</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/iOS/" rel="tag"># iOS</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2018/01/25/drawHierarchy-breaks-autolayout/" rel="prev" title="屏幕截取与自动布局二三事">
+                  <i class="fa fa-chevron-left"></i> 屏幕截取与自动布局二三事
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/08/01/behindthescenes-symbol-resolve/" rel="next" title="跟着 WWDC 一起探秘符号解析的魔法">
+                  跟着 WWDC 一起探秘符号解析的魔法 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      const activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      const commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Gocy</span>
+</div>
+  <div class="powered-by">تطبيق الموقع <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>

@@ -1,38 +1,377 @@
-{% extends '_layout.swig' %}
-{% import '_macro/post.swig' as post_template %}
-{% import '_macro/sidebar.swig' as sidebar_template %}
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
 
 
-{% block title %} {{ page.title }} | {{ config.title }} {% endblock %}
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
 
-{% block page_class %}page-post-detail{% endblock %}
+<link rel="stylesheet" href="/css/main.css">
 
 
-{% block content %}
 
-  <div id="posts" class="posts-expand">
-    {{ post_template.render(page) }}
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.1/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
 
-    <div class="post-spread">
-      {% if theme.jiathis %}
-        {% include '_partials/share/jiathis.swig' %}
-      {% elseif theme.baidushare %}
-        {% include '_partials/share/baidushare.swig' %}
-      {% elseif theme.add_this_id %}
-        {% include '_partials/share/add-this.swig' %}
-      {% elseif theme.duoshuo_shortname and theme.duoshuo_share %}
-        {% include '_partials/share/duoshuo_share.swig' %}
-      {% endif %}
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"blog.gocy.tech","root":"/","images":"/images","scheme":"Muse","version":"8.2.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"بحث...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}};
+  </script>
+<meta name="description" content="前言终于写下第三篇啦！本篇将利用 Node.js 实现中转服务器，在 iOS 上实现一个简单的聊天室。 本文是 iOS 程序员的 JavaScript 之旅 系列的第三篇，这个系列主要用于记录我在学习 JavaScript 中的一点心得，文中内容由于参考文献版本不一定是最新 &amp; 个人理解水平有限，可能出现一些错误，还请谅解。如果有任何讨论 &#x2F; 建议 &#x2F; 意见，欢迎评论留言或是邮件联系。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="利用 Node.js 搭建一个简单聊天室">
+<meta property="og:url" content="https://blog.gocy.tech/2017/04/28/simple-node-chatroom/index.html">
+<meta property="og:site_name" content="Gocy&#39;s home page">
+<meta property="og:description" content="前言终于写下第三篇啦！本篇将利用 Node.js 实现中转服务器，在 iOS 上实现一个简单的聊天室。 本文是 iOS 程序员的 JavaScript 之旅 系列的第三篇，这个系列主要用于记录我在学习 JavaScript 中的一点心得，文中内容由于参考文献版本不一定是最新 &amp; 个人理解水平有限，可能出现一些错误，还请谅解。如果有任何讨论 &#x2F; 建议 &#x2F; 意见，欢迎评论留言或是邮件联系。">
+<meta property="og:locale">
+<meta property="article:published_time" content="2017-04-28T02:39:58.000Z">
+<meta property="article:modified_time" content="2017-10-31T08:53:27.000Z">
+<meta property="article:author" content="Gocy">
+<meta property="article:tag" content="iOS 程序员的 JavaScript 之旅">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://blog.gocy.tech/2017/04/28/simple-node-chatroom/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh'
+  };
+</script>
+<title>利用 Node.js 搭建一个简单聊天室 | Gocy's home page</title>
+  
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="تشغيل شريط التصفح" role="button">
     </div>
   </div>
 
-{% endblock %}
+  <div class="site-meta">
 
-{% block sidebar %}
-  {{ sidebar_template.render(true) }}
-{% endblock %}
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">Gocy's home page</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">把热爱的事情做好</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
 
 
-{% block script_extra %}
-  {% include '_scripts/pages/post-details.swig' %}
-{% endblock %}
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          المحتويات
+        </li>
+        <li class="sidebar-nav-overview">
+          عام
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9C%80%E6%B1%82%E5%88%86%E6%9E%90"><span class="nav-number">2.</span> <span class="nav-text">需求分析</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#HTTP"><span class="nav-number">2.1.</span> <span class="nav-text">HTTP?</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#WebSocket"><span class="nav-number">2.2.</span> <span class="nav-text">WebSocket</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8A%A8%E6%89%8B%E5%AE%9E%E7%8E%B0"><span class="nav-number">3.</span> <span class="nav-text">动手实现</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Server-Side"><span class="nav-number">3.1.</span> <span class="nav-text">Server Side</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Client-Side"><span class="nav-number">3.2.</span> <span class="nav-text">Client Side</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Gocy</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives">
+          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-name">المقالات</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">الوسوم</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh">
+    <link itemprop="mainEntityOfPage" href="https://blog.gocy.tech/2017/04/28/simple-node-chatroom/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Gocy">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Gocy's home page">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          利用 Node.js 搭建一个简单聊天室
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">نُشر في</span>
+
+      <time title="أُنشأ: 2017-04-28 10:39:58" itemprop="dateCreated datePublished" datetime="2017-04-28T10:39:58+08:00">2017-04-28</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">عُدل في</span>
+        <time title="عُدل: 2017-10-31 16:53:27" itemprop="dateModified" datetime="2017-10-31T16:53:27+08:00">2017-10-31</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>终于写下第三篇啦！本篇将利用 Node.js 实现中转服务器，在 iOS 上实现一个简单的聊天室。</p>
+<p>本文是 <strong><a href="/tags/iOS-%E7%A8%8B%E5%BA%8F%E5%91%98%E7%9A%84-JavaScript-%E4%B9%8B%E6%97%85/">iOS 程序员的 JavaScript 之旅</a></strong> 系列的第三篇，这个系列主要用于记录我在学习 JavaScript 中的一点心得，文中内容由于参考文献版本不一定是最新 &amp; 个人理解水平有限，可能出现一些错误，还请谅解。如果有任何讨论 / 建议 / 意见，欢迎评论留言或是邮件联系。</p>
+<a id="more"></a>
+
+<h3 id="需求分析"><a href="#需求分析" class="headerlink" title="需求分析"></a>需求分析</h3><p>聊天室顾名思义即是一个聊天的地方，普遍的场景自然是房间内的一个用户发送消息，所有在房间内用户都收到对应的消息，这个过程就涉及到两个步骤：</p>
+<ol>
+<li>发送消息的用户将消息发送至服务器。</li>
+<li>服务器将该消息广播给在聊天室内的所有用户。</li>
+</ol>
+<h4 id="HTTP"><a href="#HTTP" class="headerlink" title="HTTP?"></a>HTTP?</h4><p>基于 HTTP 协议进行数据传输是第一反应，将消息封装成一个 HTTP 请求发送至服务器似乎是一个不错的选择，但 HTTP 协议的连接更多是基于“任务请求”式的，即便是 HTTP1.1 之后加入了 keep-alive 的连接方式，HTTP 请求依然是严格遵循“一个 request，一个 response”的模式，而且服务器不能主动向客户端推送消息，尽管可以使用轮询的方式来模拟服务器推送，但这样的实现方式显然不够好。</p>
+<h4 id="WebSocket"><a href="#WebSocket" class="headerlink" title="WebSocket"></a>WebSocket</h4><p>本例中，WebSocket 将是更好的技术方案，WebSocket 的建立是基于 HTTP 协议的，但当服务端和客户端都切换到 WebSocket 模式后，其工作过程就和 HTTP 没有任何关系了，WebSocket 支持任意方作为数据发送方，因此服务端可以主动推送消息给客户端，同时其消息传输没有一一对应的要求，因此一方可以同时发送多条消息，而另一方并不一定要发送回应。更多关于 HTTP、WebSocket 的异同，我推荐你<a target="_blank" rel="noopener" href="https://www.zhihu.com/question/20215561/answer/40316953">看看这个</a>。</p>
+<h3 id="动手实现"><a href="#动手实现" class="headerlink" title="动手实现"></a>动手实现</h3><p>本文执笔时，使用的编辑器是 VSCode 1.11.2，node 版本为 v7.8.0，Xcode 版本 8.3，Swift 版本 3.0.2。</p>
+<h4 id="Server-Side"><a href="#Server-Side" class="headerlink" title="Server Side"></a>Server Side</h4><p>不得不说，习惯了在 iOS 上写个 demo 都要连几个 outlet，初始化一些界面元素这样麻烦的前期工作，如果想在真机上跑，还要弄开发者账号、证书等一堆东西，起手写 node 的体验实在是太好，VSCode 内建 node 编译环境，只需要创建 .js 后缀文件，直接运行，你的第一个 Node.js 程序就这样跑起来了。</p>
+<p><img src = "/images/NodeChat/firstnode.png" width=520></img></p>
+<p>本文中所用到的第三方库，均是通过 Google 搜索得到的结果，如果你阅读本文后，想在本文的基础上添加一些新的功能却无从下手，请记得：Google is your best friend.<br>WebSocket 服务端，我选择的是 <a target="_blank" rel="noopener" href="https://github.com/sitegui/nodejs-websocket">nodejs-websocket</a>，更大众化的选择是 <a target="_blank" rel="noopener" href="https://github.com/websockets/ws">ws</a>，但我已经不记得为什么我选择了前者了 :( ，anyway ,it gets the job done !</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> ws = <span class="built_in">require</span>(<span class="string">&#x27;nodejs-websocket&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">//WEBSOCKET</span></span><br><span class="line"><span class="keyword">var</span> wsServer = ws.createServer(<span class="function"><span class="keyword">function</span> <span class="title">_onConnect</span>(<span class="params">conn</span>) </span>&#123; </span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">&quot;connection established.&quot;</span>)</span><br><span class="line"></span><br><span class="line">    conn.on(<span class="string">&#x27;text&#x27;</span>, <span class="function"><span class="keyword">function</span> <span class="title">_getNewChatMessage</span>(<span class="params">msg</span>) </span>&#123;</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">&#x27;New message : &#x27;</span> + msg)</span><br><span class="line">        wsServer.broadcast(msg)</span><br><span class="line">    &#125;);</span><br><span class="line">    conn.on(<span class="string">&#x27;close&#x27;</span>, <span class="function"><span class="keyword">function</span> <span class="title">_connectClosed</span>(<span class="params">code, reason</span>) </span>&#123;</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">&#x27;connection closed.&#x27;</span>);  </span><br><span class="line">    &#125;);</span><br><span class="line">    conn.on(<span class="string">&#x27;error&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params">err</span>) </span>&#123; </span><br><span class="line">        <span class="keyword">if</span> (err.code !== <span class="string">&#x27;ECONNRESET&#x27;</span>) &#123;</span><br><span class="line">            <span class="comment">// Ignore ECONNRESET and rethrow anything else</span></span><br><span class="line">            <span class="keyword">throw</span> err</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;)</span><br><span class="line">&#125;).listen(<span class="number">8081</span>);</span><br><span class="line"></span><br><span class="line">wsServer.broadcast = <span class="function"><span class="keyword">function</span> <span class="title">_broadcast</span>(<span class="params">data</span>) </span>&#123;</span><br><span class="line">    wsServer.connections.forEach(<span class="function"><span class="keyword">function</span> <span class="title">_forEachConnection</span>(<span class="params">conn</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (conn.OPEN) &#123;</span><br><span class="line">            conn.send(data);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>首行的 <code>require</code> 方法，类似 iOS 中的 <code>import</code>，是为了引入其它文件中的方法。但与 oc/swift 不同的是，这里并没有头文件，或是 <code>public</code>,<code>private</code> 等概念，因此引入依赖的机制和 iOS 中不太一样，具体可以看看 <a target="_blank" rel="noopener" href="http://javascript.ruanyifeng.com/nodejs/module.html#toc2">这里的内容</a>。接下来就是利用 WebSocket 库，创建服务器、定义连接事件、指定监听接口以及实现广播方法，again，当你遇到问题的时候，谷歌就是你最好的朋友。</p>
+<p>不管你信不信，但服务端的核心代码已经写好了，现在只需要运行 js 文件，并在你的客户端上用 WebSocket 协议连接 <code>http://youripaddress:8081</code> 就可以了！</p>
+<blockquote>
+<p><em>在调试服务端代码的时候，我们往往需要验证从客户端-服务端-客户端的消息传递流程，而用 iOS 写一个客户端的 demo 实在是有些复杂（又要配 AppTransport Security，又要找第三方 WebSocket 库，UI 又很花时间，更不用提你还需要两台设备来测试收发消息了），而你又是一个熟悉 js 的好同志 - 为什么不写个简单的 HTML，用 js 来实现客户端呢？毕竟现在，最重要的就是快速验证服务端逻辑。</em></p>
+</blockquote>
+<h4 id="Client-Side"><a href="#Client-Side" class="headerlink" title="Client Side"></a>Client Side</h4><p>确保服务端逻辑无误后，就可以开始客户端的开发了。除了工作项目外，我已经很少使用 Objective-C 来进行开发了，使用 Swift 这样更简洁、高级的语言不但能更快速建立起原型，也同样能反作用于日常的 oc 开发，让你的 oc 代码更“年轻”和安全。在本例的开发中，我使用的是 <a target="_blank" rel="noopener" href="https://github.com/tidwall/SwiftWebSocket">SwiftWebSocket</a>，类似的库非常多，当然你也可以选择自己实现。接下来贴代码：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">RequestManager</span></span>&#123;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//MARK: Singleton</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">private</span> <span class="keyword">let</span> mgr <span class="operator">=</span> <span class="type">RequestManager</span>() <span class="comment">//class stored property not support</span></span><br><span class="line">    <span class="keyword">open</span> <span class="class"><span class="keyword">class</span> <span class="title">var</span> `<span class="title">default</span>` : <span class="title">RequestManager</span></span>&#123;</span><br><span class="line">        <span class="keyword">get</span>&#123;</span><br><span class="line">            <span class="keyword">return</span> mgr</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//MARK: Properties</span></span><br><span class="line">    <span class="keyword">fileprivate</span> <span class="keyword">let</span> ip <span class="operator">=</span> <span class="string">&quot;172.26.41.2&quot;</span> </span><br><span class="line">    <span class="keyword">fileprivate</span> <span class="keyword">let</span> chatPort <span class="operator">=</span> <span class="string">&quot;8081&quot;</span></span><br><span class="line">    <span class="keyword">fileprivate</span> <span class="keyword">var</span> ws : <span class="type">WebSocket</span>!</span><br><span class="line">    <span class="comment">//MARK: Life Cycle</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">init</span>()&#123;&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">extension</span> <span class="title">RequestManager</span></span>&#123; <span class="comment">//WebSocket</span></span><br><span class="line">    <span class="function"><span class="keyword">func</span> <span class="title">connectToServer</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">        name:String,</span></span></span><br><span class="line"><span class="function"><span class="params">        <span class="keyword">open</span>:@escaping <span class="params">()</span></span></span>-&gt;() <span class="operator">=</span> &#123;&#125;,</span><br><span class="line">        close:<span class="keyword">@escaping</span> (<span class="type">Int</span>,<span class="type">String</span>,<span class="type">Bool</span>)-&gt;() <span class="operator">=</span> &#123;<span class="keyword">_</span>,<span class="keyword">_</span>,<span class="keyword">_</span> <span class="keyword">in</span>&#125;,</span><br><span class="line">        error:<span class="keyword">@escaping</span> (<span class="type">Error</span>)-&gt;() <span class="operator">=</span> &#123;<span class="keyword">_</span> <span class="keyword">in</span>&#125;,</span><br><span class="line">        message:<span class="keyword">@escaping</span> (<span class="keyword">Any</span>)-&gt;() <span class="operator">=</span> &#123;<span class="keyword">_</span> <span class="keyword">in</span>&#125;</span><br><span class="line">        )&#123;</span><br><span class="line">        <span class="keyword">if</span> ws <span class="operator">==</span> <span class="literal">nil</span> &#123;</span><br><span class="line">            ws <span class="operator">=</span> <span class="type">WebSocket</span>()</span><br><span class="line">        &#125;</span><br><span class="line">        ws.close()</span><br><span class="line">        <span class="keyword">let</span> encodedName <span class="operator">=</span> name.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) <span class="operator">??</span> <span class="string">&quot;IllegalName&quot;</span></span><br><span class="line">        ws.open(<span class="string">&quot;ws://<span class="subst">\(<span class="keyword">self</span>.ip)</span>:<span class="subst">\(<span class="keyword">self</span>.chatPort)</span>/?username=<span class="subst">\(encodedName)</span>&quot;</span>)</span><br><span class="line">        </span><br><span class="line">        ws.event.open <span class="operator">=</span> <span class="keyword">open</span></span><br><span class="line">        ws.event.error <span class="operator">=</span> error</span><br><span class="line">        ws.event.close <span class="operator">=</span> close</span><br><span class="line">        ws.event.message <span class="operator">=</span> message</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">func</span> <span class="title">disconnect</span><span class="params">()</span></span>&#123;</span><br><span class="line">        ws<span class="operator">?</span>.close()</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">func</span> <span class="title">send</span><span class="params">(text msg:String)</span></span>&#123;</span><br><span class="line">        ws<span class="operator">?</span>.send(text: msg)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>看到 Swift 的代码你会发现，这里看起来和服务端的 js 非常相似，消息的传递均是通过对事件的监听，就连语法好像都差不多。事实上，如果 JavaScript 加上类型定义（是的我说的就是 TypeScript），你会发现它和 Swift 是多么地相像。<code>RequestManager</code> 所实现的功能非常简单，提供连接服务器的接口，让调用方传入事件监听的闭包，并提供发送消息、断开连接的接口。这里传入的 <code>name</code> 参数，是因为实际上我还在服务端加入了一个用户名去重的逻辑，但这部分功能和 WebSocket 本身没有太大关系，不影响整个聊天室的正常使用。</p>
+<p>不管你信不信，但客户端的网络连接部分也做好了，接下来的 UI 搭建、调用逻辑，就十分简单了。</p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>其实本篇内容十分简单，服务端使用 <code>nodejs-websocket</code> 库，几句代码就实现了支持 WebSocket Server 的创建，客户端使用 <code>SwiftWebSocket</code> 也非常轻松地实现了与服务端的连接、交互。完整的项目还加入了基于 HTTP 的聊天室登录、用户名唯一性检查功能，代码可以在 <a target="_blank" rel="noopener" href="https://github.com/Gocy015/NodeChatRoom">这里</a> 下载。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/iOS-%E7%A8%8B%E5%BA%8F%E5%91%98%E7%9A%84-JavaScript-%E4%B9%8B%E6%97%85/" rel="tag"># iOS 程序员的 JavaScript 之旅</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2017/04/24/iOS-Signing/" rel="prev" title="如何理解 iOS 的签名证书机制">
+                  <i class="fa fa-chevron-left"></i> 如何理解 iOS 的签名证书机制
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2017/05/11/networking-protocol-glimpse/" rel="next" title="「番外篇之一」初探网络协议">
+                  「番外篇之一」初探网络协议 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      const activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      const commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Gocy</span>
+</div>
+  <div class="powered-by">تطبيق الموقع <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>
